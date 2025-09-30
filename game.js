@@ -4,6 +4,19 @@ let maxBossHealth = 1000;
 let units = [];
 let gameInterval;
 
+// COMBO SYSTEM
+let comboMeter = {
+    archer: { count: 0, timer: null },
+    mage: { count: 0, timer: null },
+    tank: { count: 0, timer: null }
+};
+
+const comboBonuses = {
+    archer: { name: "ARROW RAIN", damage: 150, emoji: "🌧️" },
+    mage: { name: "METEOR STRIKE", damage: 200, emoji: "☄️" },
+    tank: { name: "SHIELD BASH", damage: 100, emoji: "💥" }
+};
+
 // Unit Types
 const unitTypes = {
     archer: { emoji: '🎯', damage: 50, color: '#FF6B6B' },
@@ -53,6 +66,17 @@ function summonUnit(type) {
             }
         }, 600); // Damage apply after projectile reach boss
     }, 1000);
+}
+
+// Remove Unit After Attack
+function removeUnit(unitId) {
+    const unitElement = document.getElementById(unitId);
+    if (unitElement) {
+        unitElement.style.opacity = '0';
+        setTimeout(() => {
+            unitElement.remove();
+        }, 500);
+    }
 }
 
 // ATTACK ANIMATION - Show Projectile
@@ -105,15 +129,72 @@ function getProjectileData(unitType) {
     return projectiles[unitType] || { emoji: '⭐', size: 20, animation: 'defaultAttack' };
 }
 
-// Remove Unit After Attack
-function removeUnit(unitId) {
-    const unitElement = document.getElementById(unitId);
-    if (unitElement) {
-        unitElement.style.opacity = '0';
-        setTimeout(() => {
-            unitElement.remove();
-        }, 500);
+// COMBO SYSTEM - Track Unit Combos
+function trackCombo(unitType) {
+    // Reset combo timer jika ada
+    if (comboMeter[unitType].timer) {
+        clearTimeout(comboMeter[unitType].timer);
     }
+    
+    // Increase combo count
+    comboMeter[unitType].count++;
+    
+    // Show combo progress
+    addLog(`🔸 ${unitTypes[unitType].emoji} Combo: ${comboMeter[unitType].count}/3`);
+    
+    // Check for combo achievement
+    if (comboMeter[unitType].count >= 3) {
+        activateCombo(unitType);
+        comboMeter[unitType].count = 0; // Reset combo
+    } else {
+        // Set combo timer (10 seconds to complete combo)
+        comboMeter[unitType].timer = setTimeout(() => {
+            addLog(`💨 ${unitTypes[unitType].emoji} Combo reset!`);
+            comboMeter[unitType].count = 0;
+        }, 10000);
+    }
+}
+
+// COMBO SYSTEM - Activate Special Attack
+function activateCombo(unitType) {
+    const combo = comboBonuses[unitType];
+    
+    // Apply combo damage
+    bossHealth = Math.max(0, bossHealth - combo.damage);
+    updateBossHealth();
+    
+    // Special effects log
+    addLog(`🎇 ${combo.emoji} **${combo.name}** COMBO! ${combo.damage} DAMAGE!`);
+    addLog(`💫 PERFECT COORDINATION! EPIC ATTACK!`);
+    
+    // Visual effect
+    showComboEffect(unitType);
+}
+
+// COMBO SYSTEM - Visual Effect
+function showComboEffect(unitType) {
+    const battleField = document.getElementById('battle-field');
+    const effect = document.createElement('div');
+    effect.className = 'combo-effect';
+    effect.textContent = comboBonuses[unitType].emoji + ' COMBO!';
+    effect.style.cssText = `
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        font-size: 48px;
+        font-weight: bold;
+        color: gold;
+        animation: comboGlow 1.5s ease-out;
+        z-index: 100;
+    `;
+    
+    battleField.appendChild(effect);
+    
+    // Remove effect after animation
+    setTimeout(() => {
+        effect.remove();
+    }, 1500);
 }
 
 // Create Unit Visual
@@ -131,27 +212,6 @@ function createUnitVisual(type, emoji) {
     battleField.appendChild(unitElement);
     
     return unitId;
-}
-
-// Start Combat System
-function startCombat() {
-    gameInterval = setInterval(() => {
-        if (units.length === 0) return;
-        
-        // Calculate total damage
-        let totalDamage = units.reduce((sum, unit) => sum + unit.damage, 0);
-        
-        // Apply damage to boss
-        bossHealth = Math.max(0, bossHealth - totalDamage);
-        
-        // Update display
-        updateBossHealth();
-        
-        // Check if boss defeated
-        if (bossHealth <= 0) {
-            bossDefeated();
-        }
-    }, 1000);
 }
 
 // Update Boss Health Display
@@ -192,6 +252,14 @@ function resetGame() {
     
     bossHealth = maxBossHealth;
     units = [];
+    
+    // RESET COMBO SYSTEM JUGA
+    for (let type in comboMeter) {
+        comboMeter[type].count = 0;
+        if (comboMeter[type].timer) {
+            clearTimeout(comboMeter[type].timer);
+        }
+    }
     
     // Clear battle field
     document.getElementById('battle-field').innerHTML = '<p>Units will appear here...</p>';
