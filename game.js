@@ -1,6 +1,6 @@
 // Game State
-let bossHealth = 10000;
-let maxBossHealth = 10000;
+let bossHealth = 1000;
+let maxBossHealth = 1000;
 let units = [];
 let gameInterval;
 
@@ -11,17 +11,51 @@ let comboMeter = {
     tank: { count: 0, timer: null }
 };
 
+// EVOLUTION SYSTEM
+let evolutionLevel = {
+    archer: { stage: 1, count: 0 },
+    mage: { stage: 1, count: 0 },
+    tank: { stage: 1, count: 0 }
+};
+
 const comboBonuses = {
     archer: { name: "ARROW RAIN", damage: 150, emoji: "🌧️" },
     mage: { name: "METEOR STRIKE", damage: 200, emoji: "☄️" },
     tank: { name: "SHIELD BASH", damage: 100, emoji: "💥" }
 };
 
-// Unit Types
+// Unit Types dengan Evolution Data
 const unitTypes = {
-    archer: { emoji: '🎯', damage: 50, color: '#FF6B6B' },
-    mage: { emoji: '🔥', damage: 75, color: '#4ECDC4' },
-    tank: { emoji: '🛡️', damage: 30, color: '#45B7D1' }
+    archer: { 
+        emoji: '🎯', 
+        damage: 50, 
+        color: '#FF6B6B',
+        evolution: {
+            stage1: { emoji: '🎯', damage: 50, name: 'Archer' },
+            stage2: { emoji: '🏹', damage: 80, name: 'Crossbow', ability: 'Piercing Shot' },
+            stage3: { emoji: '💣', damage: 120, name: 'Cannon', ability: 'Explosive Arrow' }
+        }
+    },
+    mage: { 
+        emoji: '🔥', 
+        damage: 75, 
+        color: '#4ECDC4',
+        evolution: {
+            stage1: { emoji: '🔥', damage: 75, name: 'Mage' },
+            stage2: { emoji: '🧙', damage: 110, name: 'Wizard', ability: 'Fireball' },
+            stage3: { emoji: '🌟', damage: 160, name: 'Archmage', ability: 'Meteor Shower' }
+        }
+    },
+    tank: { 
+        emoji: '🛡️', 
+        damage: 30, 
+        color: '#45B7D1',
+        evolution: {
+            stage1: { emoji: '🛡️', damage: 30, name: 'Tank' },
+            stage2: { emoji: '⚔️', damage: 50, name: 'Knight', ability: 'Shield Bash' },
+            stage3: { emoji: '🛡️✨', damage: 80, name: 'Guardian', ability: 'Aura Protection' }
+        }
+    }
 };
 
 // Initialize Game
@@ -30,32 +64,36 @@ function initGame() {
     addLog("🎮 Game started! Boss is waiting for challengers...");
 }
 
-// Summon Unit Function - WITH COMBO SYSTEM & ATTACK ANIMATION
+// Summon Unit Function - WITH EVOLUTION & COMBO SYSTEM
 function summonUnit(type) {
-    const unit = unitTypes[type];
+    const currentStage = getCurrentEvolutionStage(type);
+    const unit = currentStage;
     
-    // Create unit visual
+    // Create unit visual dengan stage betul
     const unitId = createUnitVisual(type, unit.emoji);
     
-    // Add battle log
-    addLog(`🎁 ${unit.emoji} ${type.charAt(0).toUpperCase() + type.slice(1)} summoned!`);
+    // Add battle log dengan evolution stage
+    addLog(`🎁 ${unit.emoji} Lv.${evolutionLevel[type].stage} ${unit.name} summoned!`);
+    
+    // EVOLUTION TRACKING
+    trackEvolution(type);
     
     // COMBO SYSTEM TRACKING
     trackCombo(type);
     
     // ATTACK ANIMATION SEQUENCE
     setTimeout(() => {
-        // SHOW ATTACK PROJECTILE
-        showAttackProjectile(type, unitId);
+        // SHOW ATTACK PROJECTILE (dengan evolution stage)
+        showAttackProjectile(type, unitId, evolutionLevel[type].stage);
         
         // Tunggu projectile sampai ke boss, baru apply damage
         setTimeout(() => {
-            // Apply damage
+            // Apply damage (dengan evolution damage)
             bossHealth = Math.max(0, bossHealth - unit.damage);
             updateBossHealth();
             
-            // Show attack message
-            addLog(`⚔️ ${unit.emoji} dealt ${unit.damage} damage to boss!`);
+            // Show attack message dengan evolution info
+            addLog(`⚔️ ${unit.emoji} dealt ${unit.damage} damage!`);
             
             // Remove unit after attack
             removeUnit(unitId);
@@ -64,7 +102,7 @@ function summonUnit(type) {
             if (bossHealth <= 0) {
                 bossDefeated();
             }
-        }, 600); // Damage apply after projectile reach boss
+        }, 600);
     }, 1000);
 }
 
@@ -80,7 +118,7 @@ function removeUnit(unitId) {
 }
 
 // ATTACK ANIMATION - Show Projectile
-function showAttackProjectile(unitType, unitId) {
+function showAttackProjectile(unitType, unitId, evolutionStage) {
     const unitElement = document.getElementById(unitId);
     if (!unitElement) return;
     
@@ -95,8 +133,8 @@ function showAttackProjectile(unitType, unitId) {
     const startX = unitRect.left - battleRect.left + 20;
     const startY = unitRect.top - battleRect.top + 10;
     
-    // Set projectile properties based on unit type
-    const projectileData = getProjectileData(unitType);
+    // Set projectile properties based on unit type dan evolution stage
+    const projectileData = getProjectileData(unitType, evolutionStage);
     
     projectile.id = projectileId;
     projectile.className = 'projectile';
@@ -119,14 +157,117 @@ function showAttackProjectile(unitType, unitId) {
     }, 500);
 }
 
-// PROJECTILE DATA FOR EACH UNIT TYPE
-function getProjectileData(unitType) {
+// PROJECTILE DATA FOR EACH UNIT TYPE & EVOLUTION STAGE
+function getProjectileData(unitType, evolutionStage) {
     const projectiles = {
-        archer: { emoji: '🏹', size: 24, animation: 'arrowAttack' },
-        mage: { emoji: '🔥', size: 28, animation: 'fireballAttack' },
-        tank: { emoji: '🛡️', size: 32, animation: 'shieldAttack' }
+        archer: [
+            { emoji: '🏹', size: 24, animation: 'arrowAttack' },
+            { emoji: '🏹', size: 28, animation: 'arrowAttack' },
+            { emoji: '💣', size: 32, animation: 'fireballAttack' }
+        ],
+        mage: [
+            { emoji: '🔥', size: 24, animation: 'fireballAttack' },
+            { emoji: '🔮', size: 28, animation: 'fireballAttack' },
+            { emoji: '🌟', size: 32, animation: 'fireballAttack' }
+        ],
+        tank: [
+            { emoji: '🛡️', size: 24, animation: 'shieldAttack' },
+            { emoji: '⚔️', size: 28, animation: 'shieldAttack' },
+            { emoji: '🛡️✨', size: 32, animation: 'shieldAttack' }
+        ]
     };
-    return projectiles[unitType] || { emoji: '⭐', size: 20, animation: 'defaultAttack' };
+    
+    const stageIndex = evolutionStage - 1;
+    return projectiles[unitType][stageIndex] || { emoji: '⭐', size: 20, animation: 'defaultAttack' };
+}
+
+// EVOLUTION SYSTEM - Get Current Stage
+function getCurrentEvolutionStage(unitType) {
+    const stages = unitTypes[unitType].evolution;
+    const currentStage = evolutionLevel[unitType].stage;
+    
+    switch(currentStage) {
+        case 1: return stages.stage1;
+        case 2: return stages.stage2;
+        case 3: return stages.stage3;
+        default: return stages.stage1;
+    }
+}
+
+// EVOLUTION SYSTEM - Track Evolution Progress
+function trackEvolution(unitType) {
+    evolutionLevel[unitType].count++;
+    
+    // Check if ready to evolve
+    if (evolutionLevel[unitType].count >= 5 && evolutionLevel[unitType].stage < 3) {
+        evolveUnit(unitType);
+    }
+    
+    // Show evolution progress
+    const progress = evolutionLevel[unitType].count;
+    const stage = evolutionLevel[unitType].stage;
+    addLog(`📈 ${unitTypes[unitType].emoji} Evolution: ${progress}/5 (Stage ${stage})`);
+}
+
+// EVOLUTION SYSTEM - Evolve Unit Type
+function evolveUnit(unitType) {
+    evolutionLevel[unitType].stage++;
+    evolutionLevel[unitType].count = 0;
+    
+    const newStage = evolutionLevel[unitType].stage;
+    const unitData = unitTypes[unitType].evolution;
+    
+    let message = "";
+    let newUnit = null;
+    
+    if (newStage === 2) {
+        newUnit = unitData.stage2;
+        message = `🆙 **EVOLUTION!** ${unitData.stage1.emoji} → ${newUnit.emoji} ${newUnit.name}!`;
+    } else if (newStage === 3) {
+        newUnit = unitData.stage3;
+        message = `🚀 **ULTIMATE EVOLUTION!** ${unitData.stage2.emoji} → ${newUnit.emoji} ${newUnit.name}!`;
+    }
+    
+    if (newUnit && newUnit.ability) {
+        message += ` Ability: ${newUnit.ability}!`;
+    }
+    
+    addLog(message);
+    addLog(`💪 Damage increased! New power: ${newUnit.damage}`);
+    
+    // Visual evolution effect
+    showEvolutionEffect(unitType, newStage);
+}
+
+// EVOLUTION SYSTEM - Visual Effect
+function showEvolutionEffect(unitType, newStage) {
+    const battleField = document.getElementById('battle-field');
+    const effect = document.createElement('div');
+    
+    const unitData = unitTypes[unitType].evolution;
+    const newUnit = newStage === 2 ? unitData.stage2 : unitData.stage3;
+    
+    effect.className = 'evolution-effect';
+    effect.textContent = `${unitData.stage1.emoji}→${newUnit.emoji}`;
+    effect.style.cssText = `
+        position: absolute;
+        top: 30%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        font-size: 36px;
+        font-weight: bold;
+        color: #FFD700;
+        text-shadow: 0 0 10px #FF6B00, 0 0 20px #FF8C00;
+        animation: evolutionGlow 2s ease-out;
+        z-index: 90;
+    `;
+    
+    battleField.appendChild(effect);
+    
+    // Remove effect after animation
+    setTimeout(() => {
+        effect.remove();
+    }, 2000);
 }
 
 // COMBO SYSTEM - Track Unit Combos
@@ -253,12 +394,18 @@ function resetGame() {
     bossHealth = maxBossHealth;
     units = [];
     
-    // RESET COMBO SYSTEM JUGA
+    // RESET COMBO SYSTEM
     for (let type in comboMeter) {
         comboMeter[type].count = 0;
         if (comboMeter[type].timer) {
             clearTimeout(comboMeter[type].timer);
         }
+    }
+    
+    // RESET EVOLUTION SYSTEM
+    for (let type in evolutionLevel) {
+        evolutionLevel[type].stage = 1;
+        evolutionLevel[type].count = 0;
     }
     
     // Clear battle field
@@ -268,6 +415,7 @@ function resetGame() {
     
     updateBossHealth();
     addLog("🔄 Game reset! Boss is back with full health!");
+    addLog("♻️ All units reset to basic forms!");
 }
 
 // Add Log Entry
