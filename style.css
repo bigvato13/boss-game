@@ -48,22 +48,25 @@ body {
 
 /* BATTLE FIELD */
 #battle-field {
-    height: 150px;
+    height: 200px; /* Tambah height untuk projectile space */
     border: 3px dashed rgba(255, 255, 255, 0.3);
     border-radius: 10px;
     margin: 20px 0;
     padding: 10px;
     position: relative;
     background: rgba(0, 0, 0, 0.2);
+    overflow: hidden; /* Prevent overflow */
 }
 
 /* UNIT STYLES */
 .unit {
     position: absolute;
     font-size: 32px;
-    bottom: 10px;
+    bottom: 20px;
     transition: all 0.5s ease-in-out;
     animation: float 1s infinite;
+    filter: drop-shadow(0 0 5px rgba(255,255,255,0.5));
+    z-index: 5;
 }
 
 @keyframes float {
@@ -72,6 +75,7 @@ body {
     100% { transform: translateY(0px); }
 }
 
+/* ATTACK PROJECTILE ANIMATIONS */
 .projectile {
     position: absolute;
     z-index: 10;
@@ -134,25 +138,33 @@ body {
     }
 }
 
-.unit {
+/* COMBO EFFECTS */
+.combo-effect {
     position: absolute;
-    font-size: 32px;
-    bottom: 20px;
-    transition: all 0.5s ease-in-out;
-    animation: float 1s infinite;
-    filter: drop-shadow(0 0 5px rgba(255,255,255,0.5));
-    z-index: 5;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 48px;
+    font-weight: bold;
+    color: gold;
+    text-shadow: 0 0 10px red, 0 0 20px orange, 0 0 30px yellow;
+    animation: comboGlow 1.5s ease-out;
+    z-index: 100;
 }
 
-#battle-field {
-    height: 200px; 
-    border: 3px dashed rgba(255, 255, 255, 0.3);
-    border-radius: 10px;
-    margin: 20px 0;
-    padding: 10px;
-    position: relative;
-    background: rgba(0, 0, 0, 0.2);
-    overflow: hidden;
+@keyframes comboGlow {
+    0% { 
+        transform: translate(-50%, -50%) scale(0.5);
+        opacity: 0;
+    }
+    50% { 
+        transform: translate(-50%, -50%) scale(1.2);
+        opacity: 1;
+    }
+    100% { 
+        transform: translate(-50%, -50%) scale(1);
+        opacity: 0;
+    }
 }
 
 /* CONTROLS */
