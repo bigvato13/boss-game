@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>TikTok Boss Game</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div id="game-container">
+        <h1>🎮 BOSS BATTLE GAME 🎮</h1>
+        
+        <!-- BOSS SECTION -->
+        <div id="boss">
+            <div id="boss-health-bar">
+                <div id="boss-health"></div>
+            </div>
+            <div id="boss-image">👹 BOSS</div>
+            <div id="boss-stats">Health: <span id="health-text">1000</span>/1000</div>
+        </div>
+
+        <!-- BATTLE FIELD -->
+        <div id="battle-field">
+            <p>Units will appear here...</p>
+        </div>
+
+        <!-- CONTROLS (Mock Gifts) -->
+        <div id="controls">
+            <h3>🎁 Mock Gifts (For Testing):</h3>
+            <button onclick="summonUnit('archer')">🎯 Archer (50 damage)</button>
+            <button onclick="summonUnit('mage')">🔥 Mage (75 damage)</button>
+            <button onclick="summonUnit('tank')">🛡️ Tank (30 damage)</button>
+            <button onclick="resetGame()">🔄 Reset Game</button>
+        </div>
+
+        <!-- GAME LOG -->
+        <div id="game-log">
+            <h3>📜 Battle Log:</h3>
+            <div id="log"></div>
+        </div>
+    </div>
+
+    <script src="game.js"></script>
+</body>
+</html>
