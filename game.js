@@ -1,651 +1,475 @@
-// Game State
-let bossHealth = 10000;
-let maxBossHealth = 10000;
-let units = [];
-let gameInterval;
-
-// COMBO SYSTEM
-let comboMeter = {
-    archer: { count: 0, timer: null },
-    mage: { count: 0, timer: null },
-    tank: { count: 0, timer: null }
-};
-
-// EVOLUTION SYSTEM
-let evolutionLevel = {
-    archer: { stage: 1, count: 0 },
-    mage: { stage: 1, count: 0 },
-    tank: { stage: 1, count: 0 }
-};
-
-const comboBonuses = {
-    archer: { name: "ARROW RAIN", damage: 150, emoji: "🌧️" },
-    mage: { name: "METEOR STRIKE", damage: 200, emoji: "☄️" },
-    tank: { name: "SHIELD BASH", damage: 100, emoji: "💥" }
-};
-
-// Unit Types dengan Evolution Data
-const unitTypes = {
-    archer: { 
-        emoji: '🎯', 
-        damage: 50, 
-        color: '#FF6B6B',
-        evolution: {
-            stage1: { emoji: '🎯', damage: 50, name: 'Archer' },
-            stage2: { emoji: '🏹', damage: 80, name: 'Crossbow', ability: 'Piercing Shot' },
-            stage3: { emoji: '💣', damage: 120, name: 'Cannon', ability: 'Explosive Arrow' }
-        }
-    },
-    mage: { 
-        emoji: '🔥', 
-        damage: 75, 
-        color: '#4ECDC4',
-        evolution: {
-            stage1: { emoji: '🔥', damage: 75, name: 'Mage' },
-            stage2: { emoji: '🧙', damage: 110, name: 'Wizard', ability: 'Fireball' },
-            stage3: { emoji: '🌟', damage: 160, name: 'Archmage', ability: 'Meteor Shower' }
-        }
-    },
-    tank: { 
-        emoji: '🛡️', 
-        damage: 30, 
-        color: '#45B7D1',
-        evolution: {
-            stage1: { emoji: '🛡️', damage: 30, name: 'Tank' },
-            stage2: { emoji: '⚔️', damage: 50, name: 'Knight', ability: 'Shield Bash' },
-            stage3: { emoji: '🛡️✨', damage: 80, name: 'Guardian', ability: 'Aura Protection' }
-        }
-    }
-};
-
-// Initialize Game
-function initGame() {
-    updateBossHealth();
-    updateProgressBars();
-    addLog("🎮 Game started! Boss is waiting for challengers...");
-}
-
-// Summon Unit Function - WITH EVOLUTION & COMBO SYSTEM
-function summonUnit(type) {
-    const currentStage = getCurrentEvolutionStage(type);
-    const unit = currentStage;
-    
-    // Create unit visual dengan stage betul
-    const unitId = createUnitVisual(type, unit.emoji);
-    
-    // Add battle log dengan evolution stage
-    addLog(`🎁 ${unit.emoji} Lv.${evolutionLevel[type].stage} ${unit.name} summoned!`);
-    
-    // EVOLUTION TRACKING
-    trackEvolution(type);
-    
-    // COMBO SYSTEM TRACKING
-    trackCombo(type);
-    
-    // UPDATE PROGRESS BARS
-    updateProgressBars();
-    
-    // ATTACK ANIMATION SEQUENCE
-    setTimeout(() => {
-        // SHOW ATTACK PROJECTILE (dengan evolution stage)
-        showAttackProjectile(type, unitId, evolutionLevel[type].stage);
+// TCG GAME ENGINE - PHASE 1
+class TCGGame {
+    constructor() {
+        this.gameState = {
+            players: {
+                streamer: { health: 30, maxHealth: 30, mana: 1, maxMana: 1 },
+                viewers: { health: 30, maxHealth: 30, mana: 1, maxMana: 1 }
+            },
+            turn: 1,
+            currentPlayer: 'viewers',
+            phase: 'main'
+        };
         
-        // Tunggu projectile sampai ke boss, baru apply damage
-        setTimeout(() => {
-            // Apply damage (dengan evolution damage)
-            bossHealth = Math.max(0, bossHealth - unit.damage);
-            updateBossHealth();
+        this.cards = this.initializeCards();
+        this.deck = this.initializeDeck();
+        this.hand = [];
+        this.board = {
+            streamer: [],
+            viewers: []
+        };
+        
+        this.initializeGame();
+    }
+
+    // CARD DATABASE
+    initializeCards() {
+        return {
+            // CREATURE CARDS
+            'young_dragon': {
+                id: 'young_dragon',
+                name: 'Young Dragon',
+                type: 'creature',
+                cost: 3,
+                attack: 2,
+                health: 3,
+                effect: 'Flying: Can attack over creatures',
+                rarity: 'common',
+                emoji: '🐲'
+            },
+            'fire_imp': {
+                id: 'fire_imp',
+                name: 'Fire Imp',
+                type: 'creature',
+                cost: 2,
+                attack: 3,
+                health: 1,
+                effect: 'Quick: Can attack immediately',
+                rarity: 'common',
+                emoji: '👺'
+            },
+            'forest_guardian': {
+                id: 'forest_guardian',
+                name: 'Forest Guardian',
+                type: 'creature',
+                cost: 4,
+                attack: 1,
+                health: 5,
+                effect: 'Taunt: Enemy must attack this first',
+                rarity: 'common',
+                emoji: '🌳'
+            },
             
-            // BOSS HIT ANIMATION
-            showBossHitAnimation();
+            // SPELL CARDS
+            'fireball': {
+                id: 'fireball',
+                name: 'Fireball',
+                type: 'spell',
+                cost: 2,
+                effect: 'Deal 3 damage to any target',
+                rarity: 'common',
+                emoji: '🔥'
+            },
+            'healing_light': {
+                id: 'healing_light',
+                name: 'Healing Light',
+                type: 'spell',
+                cost: 1,
+                effect: 'Restore 4 health to a creature or player',
+                rarity: 'common',
+                emoji: '✨'
+            },
+            'lightning_bolt': {
+                id: 'lightning_bolt',
+                name: 'Lightning Bolt',
+                type: 'spell',
+                cost: 1,
+                effect: 'Deal 2 damage to any target',
+                rarity: 'common',
+                emoji: '⚡'
+            },
             
-            // Show attack message dengan evolution info
-            addLog(`⚔️ ${unit.emoji} dealt ${unit.damage} damage to boss!`);
-            
-            // Remove unit after attack
-            removeUnit(unitId);
-            
-            // Check if boss defeated
-            if (bossHealth <= 0) {
-                bossDefeated();
+            // SUPPORT CARDS
+            'mana_crystal': {
+                id: 'mana_crystal',
+                name: 'Mana Crystal',
+                type: 'support',
+                cost: 0,
+                effect: 'Gain +1 max mana permanently',
+                rarity: 'rare',
+                emoji: '💎'
+            },
+            'protective_ward': {
+                id: 'protective_ward',
+                name: 'Protective Ward',
+                type: 'support',
+                cost: 1,
+                effect: 'Prevent next 3 damage to your hero',
+                rarity: 'uncommon',
+                emoji: '🛡️'
             }
-        }, 600);
-    }, 1000);
-}
-
-// Remove Unit After Attack
-function removeUnit(unitId) {
-    const unitElement = document.getElementById(unitId);
-    if (unitElement) {
-        unitElement.style.opacity = '0';
-        setTimeout(() => {
-            unitElement.remove();
-        }, 500);
+        };
     }
-}
 
-// ATTACK ANIMATION - Show Projectile
-function showAttackProjectile(unitType, unitId, evolutionStage) {
-    const unitElement = document.getElementById(unitId);
-    if (!unitElement) return;
-    
-    const battleField = document.getElementById('battle-field');
-    const projectile = document.createElement('div');
-    const projectileId = 'projectile-' + Date.now();
-    
-    // Get unit position
-    const unitRect = unitElement.getBoundingClientRect();
-    const battleRect = battleField.getBoundingClientRect();
-    
-    const startX = unitRect.left - battleRect.left + 20;
-    const startY = unitRect.top - battleRect.top + 10;
-    
-    // Set projectile properties based on unit type dan evolution stage
-    const projectileData = getProjectileData(unitType, evolutionStage);
-    
-    projectile.id = projectileId;
-    projectile.className = 'projectile';
-    projectile.textContent = projectileData.emoji;
-    projectile.style.cssText = `
-        position: absolute;
-        left: ${startX}px;
-        top: ${startY}px;
-        font-size: ${projectileData.size}px;
-        z-index: 10;
-        animation: ${projectileData.animation} 0.5s linear forwards;
-    `;
-    
-    battleField.appendChild(projectile);
-    
-    // Remove projectile after animation
-    setTimeout(() => {
-        const proj = document.getElementById(projectileId);
-        if (proj) proj.remove();
-    }, 500);
-}
-
-// PROJECTILE DATA FOR EACH UNIT TYPE & EVOLUTION STAGE
-function getProjectileData(unitType, evolutionStage) {
-    const projectiles = {
-        archer: [
-            { emoji: '🏹', size: 24, animation: 'arrowAttack' },
-            { emoji: '🏹', size: 28, animation: 'arrowAttack' },
-            { emoji: '💣', size: 32, animation: 'fireballAttack' }
-        ],
-        mage: [
-            { emoji: '🔥', size: 24, animation: 'fireballAttack' },
-            { emoji: '🔮', size: 28, animation: 'fireballAttack' },
-            { emoji: '🌟', size: 32, animation: 'fireballAttack' }
-        ],
-        tank: [
-            { emoji: '🛡️', size: 24, animation: 'shieldAttack' },
-            { emoji: '⚔️', size: 28, animation: 'shieldAttack' },
-            { emoji: '🛡️✨', size: 32, animation: 'shieldAttack' }
-        ]
-    };
-    
-    const stageIndex = evolutionStage - 1;
-    return projectiles[unitType][stageIndex] || { emoji: '⭐', size: 20, animation: 'defaultAttack' };
-}
-
-// BOSS HIT ANIMATION
-function showBossHitAnimation() {
-    const bossImage = document.getElementById('boss-image');
-    if (!bossImage) return;
-    
-    // Add hit class
-    bossImage.classList.add('boss-hit');
-    
-    // Create hit effect particles
-    createHitParticles();
-    
-    // Remove hit class after animation
-    setTimeout(() => {
-        bossImage.classList.remove('boss-hit');
-    }, 500);
-}
-
-// HIT PARTICLE EFFECTS
-function createHitParticles() {
-    const bossContainer = document.getElementById('boss-container');
-    if (!bossContainer) return;
-    
-    const particles = ['💥', '✨', '⭐', '🔥', '💫', '🌟'];
-    
-    for (let i = 0; i < 8; i++) {
-        setTimeout(() => {
-            const particle = document.createElement('div');
-            particle.textContent = particles[Math.floor(Math.random() * particles.length)];
-            particle.style.cssText = `
-                position: absolute;
-                font-size: 20px;
-                pointer-events: none;
-                z-index: 15;
-                animation: hitParticle 1s ease-out forwards;
-            `;
-            
-            // Position around boss
-            const bossRect = bossContainer.getBoundingClientRect();
-            const battleRect = document.getElementById('battle-field').getBoundingClientRect();
-            
-            const startX = bossRect.left - battleRect.left - 20;
-            const startY = bossRect.top - battleRect.top + 40;
-            
-            particle.style.left = startX + 'px';
-            particle.style.top = startY + 'px';
-            
-            // Random movement
-            const angle = Math.random() * Math.PI * 2;
-            const distance = 50 + Math.random() * 80;
-            const endX = Math.cos(angle) * distance;
-            const endY = Math.sin(angle) * distance;
-            
-            particle.style.setProperty('--end-x', endX + 'px');
-            particle.style.setProperty('--end-y', endY + 'px');
-            
-            document.getElementById('battle-field').appendChild(particle);
-            
-            // Remove particle after animation
-            setTimeout(() => {
-                if (particle.parentNode) {
-                    particle.parentNode.removeChild(particle);
-                }
-            }, 1000);
-        }, i * 80);
-    }
-}
-
-// EVOLUTION SYSTEM - Get Current Stage
-function getCurrentEvolutionStage(unitType) {
-    const stages = unitTypes[unitType].evolution;
-    const currentStage = evolutionLevel[unitType].stage;
-    
-    switch(currentStage) {
-        case 1: return stages.stage1;
-        case 2: return stages.stage2;
-        case 3: return stages.stage3;
-        default: return stages.stage1;
-    }
-}
-
-// EVOLUTION SYSTEM - Track Evolution Progress
-function trackEvolution(unitType) {
-    evolutionLevel[unitType].count++;
-    
-    // Check if ready to evolve
-    if (evolutionLevel[unitType].count >= 5 && evolutionLevel[unitType].stage < 3) {
-        evolveUnit(unitType);
-    }
-    
-    // Show evolution progress in log
-    const progress = evolutionLevel[unitType].count;
-    const stage = evolutionLevel[unitType].stage;
-    addLog(`📈 ${unitTypes[unitType].emoji} Evolution: ${progress}/5 (Stage ${stage})`);
-    
-    // Update progress bars
-    updateProgressBars();
-}
-
-// EVOLUTION SYSTEM - Evolve Unit Type
-function evolveUnit(unitType) {
-    evolutionLevel[unitType].stage++;
-    evolutionLevel[unitType].count = 0;
-    
-    const newStage = evolutionLevel[unitType].stage;
-    const unitData = unitTypes[unitType].evolution;
-    
-    let message = "";
-    let newUnit = null;
-    
-    if (newStage === 2) {
-        newUnit = unitData.stage2;
-        message = `🆙 **EVOLUTION!** ${unitData.stage1.emoji} → ${newUnit.emoji} ${newUnit.name}!`;
-    } else if (newStage === 3) {
-        newUnit = unitData.stage3;
-        message = `🚀 **ULTIMATE EVOLUTION!** ${unitData.stage2.emoji} → ${newUnit.emoji} ${newUnit.name}!`;
-    }
-    
-    if (newUnit && newUnit.ability) {
-        message += ` Ability: ${newUnit.ability}!`;
-    }
-    
-    addLog(message);
-    addLog(`💪 Damage increased! New power: ${newUnit.damage}`);
-    
-    // Visual evolution effect
-    showEvolutionEffect(unitType, newStage);
-    
-    // Update progress bars
-    updateProgressBars();
-}
-
-// EVOLUTION SYSTEM - Visual Effect
-function showEvolutionEffect(unitType, newStage) {
-    const battleField = document.getElementById('battle-field');
-    const effect = document.createElement('div');
-    
-    const unitData = unitTypes[unitType].evolution;
-    const newUnit = newStage === 2 ? unitData.stage2 : unitData.stage3;
-    
-    effect.className = 'evolution-effect';
-    effect.textContent = `${unitData.stage1.emoji}→${newUnit.emoji}`;
-    effect.style.cssText = `
-        position: absolute;
-        top: 30%;
-        left: 50%;
-        transform: translate(-50%, -50%);
-        font-size: 46px;
-        font-weight: bold;
-        color: #FFD700;
-        text-shadow: 0 0 15px #FF6B00, 0 0 30px #FF8C00, 0 0 45px #FFA500;
-        animation: evolutionGlow 2s ease-out;
-        z-index: 90;
-    `;
-    
-    battleField.appendChild(effect);
-    
-    // Remove effect after animation
-    setTimeout(() => {
-        effect.remove();
-    }, 2000);
-}
-
-// PROGRESS BARS SYSTEM - Update All Progress Bars
-function updateProgressBars() {
-    updateProgressBar('archer', evolutionLevel.archer.count, evolutionLevel.archer.stage);
-    updateProgressBar('mage', evolutionLevel.mage.count, evolutionLevel.mage.stage);
-    updateProgressBar('tank', evolutionLevel.tank.count, evolutionLevel.tank.stage);
-}
-
-// PROGRESS BARS SYSTEM - Update Individual Progress Bar
-function updateProgressBar(unitType, count, stage) {
-    const progressFill = document.getElementById(`${unitType}-progress`);
-    const progressText = document.getElementById(`${unitType}-text`);
-    
-    if (!progressFill || !progressText) return;
-    
-    let progressPercent = 0;
-    let displayText = '';
-    
-    if (stage >= 3) {
-        // Already at max evolution
-        progressPercent = 100;
-        displayText = 'MAX';
-        progressFill.style.background = 'linear-gradient(90deg, #FFD700, #FF6B00)';
-    } else {
-        // Calculate progress to next evolution
-        progressPercent = (count / 5) * 100;
-        displayText = `${count}/5`;
+    // INITIALIZE DECK
+    initializeDeck() {
+        const deck = [];
+        const cardPool = [
+            'young_dragon', 'young_dragon', 'young_dragon',
+            'fire_imp', 'fire_imp', 'fire_imp',
+            'forest_guardian', 'forest_guardian',
+            'fireball', 'fireball', 'fireball',
+            'healing_light', 'healing_light',
+            'lightning_bolt', 'lightning_bolt', 'lightning_bolt',
+            'mana_crystal',
+            'protective_ward', 'protective_ward'
+        ];
         
-        // Change color based on progress
-        if (progressPercent < 50) {
-            progressFill.style.background = 'linear-gradient(90deg, #FF6B6B, #FF8E8E)';
-        } else if (progressPercent < 80) {
-            progressFill.style.background = 'linear-gradient(90deg, #4ECDC4, #6BE0D9)';
-        } else {
-            progressFill.style.background = 'linear-gradient(90deg, #45B7D1, #67C7E0)';
+        // Shuffle deck
+        for (let i = cardPool.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [cardPool[i], cardPool[j]] = [cardPool[j], cardPool[i]];
+        }
+        
+        return cardPool;
+    }
+
+    // INITIALIZE GAME
+    initializeGame() {
+        this.drawInitialHand();
+        this.updateGameDisplay();
+        this.setupEventListeners();
+    }
+
+    // DRAW INITIAL HAND
+    drawInitialHand() {
+        for (let i = 0; i < 3; i++) {
+            this.drawCard();
         }
     }
-    
-    progressFill.style.width = progressPercent + '%';
-    progressText.textContent = displayText;
-    
-    // Add pulse animation when almost evolved
-    if (count >= 4 && stage < 3) {
-        progressFill.style.animation = 'progressPulse 1s infinite';
-    } else {
-        progressFill.style.animation = 'none';
+
+    // DRAW CARD
+    drawCard() {
+        if (this.deck.length > 0 && this.hand.length < 10) {
+            const cardId = this.deck.pop();
+            this.hand.push(cardId);
+            this.updateHandDisplay();
+            this.updateDeckCount();
+            return true;
+        }
+        return false;
     }
-}
 
-// COMBO SYSTEM - Track Unit Combos
-function trackCombo(unitType) {
-    // Reset combo timer jika ada
-    if (comboMeter[unitType].timer) {
-        clearTimeout(comboMeter[unitType].timer);
+    // PLAY CARD
+    playCard(cardId) {
+        const card = this.cards[cardId];
+        const player = this.gameState.currentPlayer;
+        
+        if (!card) return false;
+        
+        // Check if player has enough mana
+        if (this.gameState.players[player].mana < card.cost) {
+            this.showMessage("Not enough mana!");
+            return false;
+        }
+        
+        // Deduct mana
+        this.gameState.players[player].mana -= card.cost;
+        
+        // Remove card from hand
+        const handIndex = this.hand.indexOf(cardId);
+        if (handIndex > -1) {
+            this.hand.splice(handIndex, 1);
+        }
+        
+        // Handle different card types
+        switch(card.type) {
+            case 'creature':
+                this.board[player].push({
+                    ...card,
+                    currentHealth: card.health,
+                    canAttack: false // Summoning sickness
+                });
+                this.showMessage(`Summoned ${card.name}!`);
+                break;
+                
+            case 'spell':
+                this.castSpell(card);
+                break;
+                
+            case 'support':
+                this.activateSupport(card);
+                break;
+        }
+        
+        this.updateGameDisplay();
+        return true;
     }
-    
-    // Increase combo count
-    comboMeter[unitType].count++;
-    
-    // Show combo progress
-    addLog(`🔸 ${unitTypes[unitType].emoji} Combo: ${comboMeter[unitType].count}/3`);
-    
-    // Check for combo achievement
-    if (comboMeter[unitType].count >= 3) {
-        activateCombo(unitType);
-        comboMeter[unitType].count = 0; // Reset combo
-    } else {
-        // Set combo timer (10 seconds to complete combo)
-        comboMeter[unitType].timer = setTimeout(() => {
-            addLog(`💨 ${unitTypes[unitType].emoji} Combo reset!`);
-            comboMeter[unitType].count = 0;
-        }, 10000);
+
+    // CAST SPELL
+    castSpell(spell) {
+        // For Phase 1, just show message
+        this.showMessage(`Casted ${spell.name}: ${spell.effect}`);
+        
+        // Basic spell effects (to be expanded)
+        switch(spell.id) {
+            case 'fireball':
+                // Will implement targeting in Phase 2
+                break;
+            case 'healing_light':
+                // Will implement targeting in Phase 2
+                break;
+            case 'lightning_bolt':
+                // Will implement targeting in Phase 2
+                break;
+        }
     }
-}
 
-// COMBO SYSTEM - Activate Special Attack
-function activateCombo(unitType) {
-    const combo = comboBonuses[unitType];
-    
-    // Apply combo damage
-    bossHealth = Math.max(0, bossHealth - combo.damage);
-    updateBossHealth();
-    
-    // BOSS HIT ANIMATION untuk combo
-    showBossHitAnimation();
-    
-    // Special effects log
-    addLog(`🎇 ${combo.emoji} **${combo.name}** COMBO! ${combo.damage} DAMAGE!`);
-    addLog(`💫 PERFECT COORDINATION! EPIC ATTACK!`);
-    
-    // Visual effect
-    showComboEffect(unitType);
-}
-
-// COMBO SYSTEM - Visual Effect
-function showComboEffect(unitType) {
-    const battleField = document.getElementById('battle-field');
-    const effect = document.createElement('div');
-    effect.className = 'combo-effect';
-    effect.textContent = comboBonuses[unitType].emoji + ' COMBO!';
-    effect.style.cssText = `
-        position: absolute;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%);
-        font-size: 56px;
-        font-weight: bold;
-        color: gold;
-        animation: comboGlow 1.5s ease-out;
-        z-index: 100;
-    `;
-    
-    battleField.appendChild(effect);
-    
-    // Remove effect after animation
-    setTimeout(() => {
-        effect.remove();
-    }, 1500);
-}
-
-// Create Unit Visual
-function createUnitVisual(type, emoji) {
-    const battleField = document.getElementById('battle-field');
-    const unitElement = document.createElement('div');
-    
-    const unitId = 'unit-' + Date.now();
-    
-    unitElement.className = 'unit';
-    unitElement.id = unitId;
-    unitElement.textContent = emoji;
-    unitElement.style.left = (Math.random() * 200) + 'px';
-    
-    battleField.appendChild(unitElement);
-    
-    return unitId;
-}
-
-// Update Boss Health Display
-function updateBossHealth() {
-    const healthPercent = (bossHealth / maxBossHealth) * 100;
-    const healthBar = document.getElementById('boss-health');
-    const healthText = document.getElementById('health-text');
-    
-    healthBar.style.width = healthPercent + '%';
-    healthText.textContent = bossHealth;
-    
-    // Change color based on health
-    if (healthPercent < 25) {
-        healthBar.style.background = 'linear-gradient(90deg, #ff0000, #ff6b6b)';
-    } else if (healthPercent < 50) {
-        healthBar.style.background = 'linear-gradient(90deg, #ff0000, #ffa726)';
-    } else {
-        healthBar.style.background = 'linear-gradient(90deg, #ff0000, #ff6b6b, #4CAF50)';
+    // ACTIVATE SUPPORT
+    activateSupport(support) {
+        this.showMessage(`Activated ${support.name}: ${support.effect}`);
+        
+        switch(support.id) {
+            case 'mana_crystal':
+                this.gameState.players[this.gameState.currentPlayer].maxMana++;
+                this.showMessage("Max mana increased!");
+                break;
+            case 'protective_ward':
+                // Will implement in Phase 2
+                break;
+        }
     }
-}
 
-// Boss Defeated
-function bossDefeated() {
-    clearInterval(gameInterval);
-    gameInterval = null;
-    
-    addLog("🎉 🎉 🎉 BOSS DEFEATED! VICTORY! 🎉 🎉 🎉");
-    addLog("🔄 Game will reset in 5 seconds...");
-    
-    // Show celebration
-    document.getElementById('boss-image').textContent = '💀 DEFEATED';
-    document.getElementById('boss-image').style.animation = 'none';
-    document.getElementById('boss-image').style.filter = 'grayscale(1) brightness(0.5)';
-    
-    // Victory particles
-    createVictoryParticles();
-    
-    setTimeout(resetGame, 5000);
-}
+    // END TURN
+    endTurn() {
+        // Switch players
+        this.gameState.currentPlayer = this.gameState.currentPlayer === 'viewers' ? 'streamer' : 'viewers';
+        this.gameState.turn++;
+        
+        // Reset mana and increase max mana
+        const player = this.gameState.currentPlayer;
+        this.gameState.players[player].maxMana = Math.min(this.gameState.players[player].maxMana + 1, 10);
+        this.gameState.players[player].mana = this.gameState.players[player].maxMana;
+        
+        // Draw card for new turn
+        this.drawCard();
+        
+        // Allow creatures to attack
+        this.board[player].forEach(creature => {
+            creature.canAttack = true;
+        });
+        
+        this.updateGameDisplay();
+        this.showMessage(`Turn ${this.gameState.turn} - ${this.gameState.currentPlayer.toUpperCase()}'s turn`);
+    }
 
-// VICTORY PARTICLE EFFECTS
-function createVictoryParticles() {
-    const battleField = document.getElementById('battle-field');
-    const particles = ['🎉', '✨', '🌟', '💫', '🎊', '⭐'];
-    
-    for (let i = 0; i < 15; i++) {
-        setTimeout(() => {
-            const particle = document.createElement('div');
-            particle.textContent = particles[Math.floor(Math.random() * particles.length)];
-            particle.style.cssText = `
-                position: absolute;
-                font-size: 24px;
-                pointer-events: none;
-                z-index: 20;
-                animation: victoryParticle 2s ease-out forwards;
+    // UPDATE DISPLAYS
+    updateGameDisplay() {
+        this.updateHealthBars();
+        this.updateManaDisplay();
+        this.updateTurnIndicator();
+        this.updateBoardDisplays();
+        this.updateHandDisplay();
+        this.updateDeckCount();
+    }
+
+    updateHealthBars() {
+        const streamerHealth = this.gameState.players.streamer.health;
+        const viewersHealth = this.gameState.players.viewers.health;
+        
+        document.getElementById('opponent-health').style.width = (streamerHealth / 30 * 100) + '%';
+        document.getElementById('player-health').style.width = (viewersHealth / 30 * 100) + '%';
+        
+        document.getElementById('opponent-health-text').textContent = `${streamerHealth}/30`;
+        document.getElementById('player-health-text').textContent = `${viewersHealth}/30`;
+    }
+
+    updateManaDisplay() {
+        const player = this.gameState.currentPlayer;
+        const mana = this.gameState.players[player].mana;
+        const maxMana = this.gameState.players[player].maxMana;
+        
+        document.getElementById('current-mana').textContent = mana;
+        document.getElementById('max-mana').textContent = maxMana;
+    }
+
+    updateTurnIndicator() {
+        document.getElementById('turn-indicator').textContent = `Turn ${this.gameState.turn} - ${this.gameState.currentPlayer.toUpperCase()}`;
+    }
+
+    updateBoardDisplays() {
+        this.updateBoardDisplay('streamer', document.getElementById('opponent-board'));
+        this.updateBoardDisplay('viewers', document.getElementById('player-board'));
+    }
+
+    updateBoardDisplay(player, container) {
+        container.innerHTML = '';
+        this.board[player].forEach((card, index) => {
+            const cardElement = this.createCardElement(card, true);
+            container.appendChild(cardElement);
+        });
+    }
+
+    updateHandDisplay() {
+        const handContainer = document.getElementById('player-hand');
+        handContainer.innerHTML = '';
+        
+        this.hand.forEach(cardId => {
+            const card = this.cards[cardId];
+            const cardElement = this.createCardElement(card, false);
+            handContainer.appendChild(cardElement);
+        });
+        
+        document.getElementById('hand-count').textContent = this.hand.length;
+    }
+
+    updateDeckCount() {
+        document.getElementById('deck-count').textContent = this.deck.length;
+    }
+
+    // CREATE CARD ELEMENT
+    createCardElement(cardData, onBoard = false) {
+        const card = document.createElement('div');
+        card.className = `card ${cardData.type} ${onBoard ? 'on-board' : 'in-hand'}`;
+        card.setAttribute('data-card-id', cardData.id);
+        
+        let cardHTML = `
+            <div class="card-cost">${cardData.cost}</div>
+            <div class="card-name">${cardData.name}</div>
+            <div class="card-effect">${cardData.effect}</div>
+        `;
+        
+        if (cardData.type === 'creature') {
+            const health = onBoard ? cardData.currentHealth : cardData.health;
+            cardHTML += `
+                <div class="card-stats">
+                    <div class="card-attack">${cardData.attack}⚔️</div>
+                    <div class="card-health">${health}❤️</div>
+                </div>
             `;
-            
-            // Random start position
-            const startX = Math.random() * 400;
-            const startY = Math.random() * 150;
-            
-            particle.style.left = startX + 'px';
-            particle.style.top = startY + 'px';
-            
-            // Random movement
-            const angle = Math.random() * Math.PI * 2;
-            const distance = 80 + Math.random() * 120;
-            const endX = Math.cos(angle) * distance;
-            const endY = Math.sin(angle) * distance;
-            
-            particle.style.setProperty('--end-x', endX + 'px');
-            particle.style.setProperty('--end-y', endY + 'px');
-            
-            battleField.appendChild(particle);
-            
-            // Remove particle after animation
-            setTimeout(() => {
-                if (particle.parentNode) {
-                    particle.parentNode.removeChild(particle);
+        }
+        
+        card.innerHTML = cardHTML;
+        
+        // Add event listeners
+        if (!onBoard) {
+            card.addEventListener('click', () => this.handleCardPlay(cardData.id));
+        }
+        
+        card.addEventListener('mouseenter', (e) => this.showCardTooltip(e, cardData));
+        card.addEventListener('mouseleave', () => this.hideCardTooltip());
+        
+        return card;
+    }
+
+    // CARD INTERACTIONS
+    handleCardPlay(cardId) {
+        if (this.gameState.currentPlayer === 'viewers') {
+            this.playCard(cardId);
+        } else {
+            this.showMessage("Wait for your turn!");
+        }
+    }
+
+    showCardTooltip(event, cardData) {
+        const tooltip = document.getElementById('card-tooltip');
+        tooltip.innerHTML = `
+            <div id="tooltip-name">${cardData.name} ${cardData.emoji || ''}</div>
+            <div id="tooltip-cost">Cost: ${cardData.cost} ⚡</div>
+            <div id="tooltip-type">Type: ${cardData.type}</div>
+            <div id="tooltip-effect">${cardData.effect}</div>
+            ${cardData.type === 'creature' ? 
+                `<div id="tooltip-stats">Attack: ${cardData.attack} ❤️ Health: ${cardData.health}</div>` : ''
+            }
+        `;
+        
+        tooltip.style.left = (event.pageX + 10) + 'px';
+        tooltip.style.top = (event.pageY + 10) + 'px';
+        tooltip.classList.remove('hidden');
+    }
+
+    hideCardTooltip() {
+        document.getElementById('card-tooltip').classList.add('hidden');
+    }
+
+    // MESSAGE SYSTEM
+    showMessage(message) {
+        const status = document.getElementById('game-status');
+        status.textContent = message;
+        status.classList.add('pulse');
+        
+        setTimeout(() => {
+            status.classList.remove('pulse');
+        }, 2000);
+    }
+
+    // EVENT LISTENERS
+    setupEventListeners() {
+        document.getElementById('end-turn-btn').addEventListener('click', () => this.endTurn());
+        document.getElementById('draw-card-btn').addEventListener('click', () => this.drawCard());
+        
+        // TikTok gift simulation (for testing)
+        document.addEventListener('keypress', (e) => {
+            if (e.key === '1') {
+                this.simulateGift('🌹'); // Draw card
+            } else if (e.key === '2') {
+                this.simulateGift('🚀'); // Extra mana
+            } else if (e.key === '3') {
+                this.simulateGift('🦁'); // Special card
+            }
+        });
+    }
+
+    // TIKTOK GIFT SIMULATION (Phase 1 Testing)
+    simulateGift(giftType) {
+        switch(giftType) {
+            case '🌹':
+                this.drawCard();
+                this.showMessage("🎁 Gift received: Drew a card!");
+                break;
+            case '🚀':
+                this.gameState.players.viewers.mana += 2;
+                this.showMessage("🎁 Gift received: +2 Mana!");
+                this.updateManaDisplay();
+                break;
+            case '🦁':
+                // Add a random rare card to hand
+                const rareCards = Object.keys(this.cards).filter(id => this.cards[id].rarity === 'rare');
+                if (rareCards.length > 0) {
+                    const randomCard = rareCards[Math.floor(Math.random() * rareCards.length)];
+                    this.hand.push(randomCard);
+                    this.updateHandDisplay();
+                    this.showMessage(`🎁 Gift received: ${this.cards[randomCard].name}!`);
                 }
-            }, 2000);
-        }, i * 200);
+                break;
+        }
     }
 }
 
-// Reset Game
-function resetGame() {
-    clearInterval(gameInterval);
-    gameInterval = null;
-    
-    bossHealth = maxBossHealth;
-    units = [];
-    
-    // RESET COMBO SYSTEM
-    for (let type in comboMeter) {
-        comboMeter[type].count = 0;
-        if (comboMeter[type].timer) {
-            clearTimeout(comboMeter[type].timer);
-        }
-    }
-    
-    // RESET EVOLUTION SYSTEM
-    for (let type in evolutionLevel) {
-        evolutionLevel[type].stage = 1;
-        evolutionLevel[type].count = 0;
-    }
-    
-    // Clear battle field
-    document.getElementById('battle-field').innerHTML = `
-        <div id="boss-container">
-            <div id="boss-image">👹</div>
-            <div id="boss-name">BOSS</div>
-        </div>
-        <p>⚔️ BATTLE ARENA - Summon units to fight! ⚔️</p>
-    `;
-    
-    document.getElementById('log').innerHTML = '';
-    
-    updateBossHealth();
-    updateProgressBars();
-    addLog("🔄 Game reset! Boss is back with full health!");
-    addLog("♻️ All units reset to basic forms!");
-}
+// INITIALIZE GAME WHEN PAGE LOADS
+let tcgGame;
 
-// Add Log Entry
-function addLog(message) {
-    const log = document.getElementById('log');
-    const logEntry = document.createElement('div');
+document.addEventListener('DOMContentLoaded', () => {
+    tcgGame = new TCGGame();
+    console.log('🎴 TikTok TCG Live - Phase 1 Ready!');
     
-    logEntry.className = 'log-entry';
-    logEntry.textContent = message;
+    // Add some test chat messages
+    const chat = document.getElementById('live-chat-preview');
+    const messages = [
+        "Viewer1: Play the dragon! 🐲",
+        "TCGFan: We need more mana! ⚡",
+        "GamerGirl: Fireball the opponent! 🔥",
+        "CardMaster: Good move! 👍",
+        "StreamLover: This game is awesome! 🎮"
+    ];
     
-    // Auto-scroll to bottom
-    log.appendChild(logEntry);
-    log.scrollTop = log.scrollHeight;
-}
-
-// Add CSS for progress bar pulse animation
-const style = document.createElement('style');
-style.textContent = `
-    @keyframes progressPulse {
-        0% { opacity: 1; box-shadow: 0 0 10px rgba(78, 205, 196, 0.5); }
-        50% { opacity: 0.8; box-shadow: 0 0 20px rgba(78, 205, 196, 0.8); }
-        100% { opacity: 1; box-shadow: 0 0 10px rgba(78, 205, 196, 0.5); }
-    }
-    
-    @keyframes victoryParticle {
-        0% {
-            transform: translate(0, 0) scale(1) rotate(0deg);
-            opacity: 1;
-        }
-        50% {
-            transform: translate(var(--end-x), var(--end-y)) scale(1.5) rotate(180deg);
-            opacity: 0.9;
-        }
-        100% {
-            transform: translate(calc(var(--end-x) * 1.2), calc(var(--end-y) * 1.2)) scale(0) rotate(360deg);
-            opacity: 0;
-        }
-    }
-`;
-document.head.appendChild(style);
-
-// Initialize game when page loads
-window.onload = initGame;
+    messages.forEach((msg, index) => {
+        setTimeout(() => {
+            const messageDiv = document.createElement('div');
+            messageDiv.className = 'chat-message';
+            messageDiv.textContent = msg;
+            chat.appendChild(messageDiv);
+            chat.scrollTop = chat.scrollHeight;
+        }, index * 3000);
+    });
+});
