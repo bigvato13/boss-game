@@ -17,7 +17,7 @@ function initGame() {
     addLog("🎮 Game started! Boss is waiting for challengers...");
 }
 
-// Summon Unit Function - ONE TIME ATTACK
+// Summon Unit Function - WITH COMBO SYSTEM & ATTACK ANIMATION
 function summonUnit(type) {
     const unit = unitTypes[type];
     
@@ -27,23 +27,82 @@ function summonUnit(type) {
     // Add battle log
     addLog(`🎁 ${unit.emoji} ${type.charAt(0).toUpperCase() + type.slice(1)} summoned!`);
     
-    // ONE-TIME ATTACK after 1 second delay
+    // COMBO SYSTEM TRACKING
+    trackCombo(type);
+    
+    // ATTACK ANIMATION SEQUENCE
     setTimeout(() => {
-        // Apply damage
-        bossHealth = Math.max(0, bossHealth - unit.damage);
-        updateBossHealth();
+        // SHOW ATTACK PROJECTILE
+        showAttackProjectile(type, unitId);
         
-        // Show attack message
-        addLog(`⚔️ ${unit.emoji} dealt ${unit.damage} damage to boss!`);
-        
-        // Remove unit after attack
-        removeUnit(unitId);
-        
-        // Check if boss defeated
-        if (bossHealth <= 0) {
-            bossDefeated();
-        }
+        // Tunggu projectile sampai ke boss, baru apply damage
+        setTimeout(() => {
+            // Apply damage
+            bossHealth = Math.max(0, bossHealth - unit.damage);
+            updateBossHealth();
+            
+            // Show attack message
+            addLog(`⚔️ ${unit.emoji} dealt ${unit.damage} damage to boss!`);
+            
+            // Remove unit after attack
+            removeUnit(unitId);
+            
+            // Check if boss defeated
+            if (bossHealth <= 0) {
+                bossDefeated();
+            }
+        }, 600); // Damage apply after projectile reach boss
     }, 1000);
+}
+
+// ATTACK ANIMATION - Show Projectile
+function showAttackProjectile(unitType, unitId) {
+    const unitElement = document.getElementById(unitId);
+    if (!unitElement) return;
+    
+    const battleField = document.getElementById('battle-field');
+    const projectile = document.createElement('div');
+    const projectileId = 'projectile-' + Date.now();
+    
+    // Get unit position
+    const unitRect = unitElement.getBoundingClientRect();
+    const battleRect = battleField.getBoundingClientRect();
+    
+    const startX = unitRect.left - battleRect.left + 20;
+    const startY = unitRect.top - battleRect.top + 10;
+    
+    // Set projectile properties based on unit type
+    const projectileData = getProjectileData(unitType);
+    
+    projectile.id = projectileId;
+    projectile.className = 'projectile';
+    projectile.textContent = projectileData.emoji;
+    projectile.style.cssText = `
+        position: absolute;
+        left: ${startX}px;
+        top: ${startY}px;
+        font-size: ${projectileData.size}px;
+        z-index: 10;
+        animation: ${projectileData.animation} 0.5s linear forwards;
+    `;
+    
+    battleField.appendChild(projectile);
+    
+    // Remove projectile after animation
+    setTimeout(() => {
+        const proj = document.getElementById(projectileId);
+        if (proj) proj.remove();
+    }, 500);
+}
+
+// PROJECTILE DATA FOR EACH UNIT TYPE
+function getProjectileData(unitType) {
+    const projectiles = {
+        archer: { emoji: '🏹', size: 24, animation: 'arrowAttack' },
+        mage: { emoji: '🔥', size: 28, animation: 'fireballAttack' },
+        tank: { emoji: '🛡️', size: 32, animation: 'shieldAttack' }
+    };
+    return projectiles[unitType] || { emoji: '⭐', size: 20, animation: 'defaultAttack' };
 }
 
 // Remove Unit After Attack
