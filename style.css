@@ -1,753 +1,443 @@
-body {
-    font-family: 'Arial', sans-serif;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    color: white;
+/* RESET & BASE STYLES */
+* {
     margin: 0;
-    padding: 20px;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+    color: #ffffff;
     min-height: 100vh;
+    overflow-x: hidden;
 }
 
 #game-container {
-    max-width: 900px;
+    max-width: 1200px;
     margin: 0 auto;
-    text-align: center;
-    background: rgba(0, 0, 0, 0.1);
-    border-radius: 20px;
-    padding: 25px;
-    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3);
-}
-
-/* BOSS STYLES */
-#boss {
-    background: rgba(0, 0, 0, 0.3);
-    padding: 25px;
-    border-radius: 20px;
-    margin: 20px 0;
-    border: 2px solid rgba(255, 255, 255, 0.1);
-    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
-    backdrop-filter: blur(10px);
-}
-
-#boss-health-bar {
-    width: 100%;
-    height: 35px;
-    background: #333;
-    border-radius: 20px;
-    margin: 15px 0;
-    overflow: hidden;
-    border: 2px solid rgba(255, 255, 255, 0.2);
-    box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.3);
-}
-
-#boss-health {
-    width: 100%;
-    height: 100%;
-    background: linear-gradient(90deg, #ff0000, #ff6b6b, #4CAF50);
-    transition: width 0.5s ease-in-out;
-    border-radius: 18px;
-}
-
-#boss-image {
-    font-size: 64px;
-    margin: 15px 0;
-    text-shadow: 0 0 25px rgba(255, 0, 0, 0.7);
-    animation: bossIdle 3s infinite ease-in-out;
-    filter: drop-shadow(0 0 10px rgba(255, 0, 0, 0.5));
-}
-
-@keyframes bossIdle {
-    0% { transform: translateY(0px) scale(1); }
-    50% { transform: translateY(-12px) scale(1.08); }
-    100% { transform: translateY(0px) scale(1); }
-}
-
-#boss-stats {
-    font-size: 22px;
-    font-weight: bold;
-    color: #FFD700;
-    text-shadow: 0 0 15px rgba(255, 215, 0, 0.7);
-    margin-top: 10px;
-}
-
-/* BOSS CONTAINER DALAM BATTLE FIELD */
-#boss-container {
-    position: absolute;
-    right: 40px;
-    top: 50%;
-    transform: translateY(-50%);
-    text-align: center;
-    z-index: 8;
-}
-
-#boss-name {
-    font-size: 20px;
-    font-weight: bold;
-    color: #FF6B6B;
-    text-shadow: 0 0 12px rgba(255, 0, 0, 0.6);
-    margin-top: 8px;
-    background: rgba(0, 0, 0, 0.4);
-    padding: 5px 15px;
-    border-radius: 10px;
-    border: 1px solid rgba(255, 107, 107, 0.3);
-}
-
-/* BOSS HIT ANIMATION */
-@keyframes bossHit {
-    0% { transform: scale(1) rotate(0deg); }
-    25% { transform: scale(1.15) rotate(-8deg); }
-    50% { transform: scale(1.2) rotate(8deg); }
-    75% { transform: scale(1.15) rotate(-4deg); }
-    100% { transform: scale(1) rotate(0deg); }
-}
-
-.boss-hit {
-    animation: bossHit 0.5s ease-in-out !important;
-    filter: brightness(1.8) drop-shadow(0 0 20px red) contrast(1.5);
-}
-
-/* BATTLE FIELD */
-#battle-field {
-    height: 250px;
-    border: 3px solid rgba(255, 215, 0, 0.4);
-    border-radius: 15px;
-    margin: 25px 0;
     padding: 20px;
-    position: relative;
-    background: rgba(0, 0, 0, 0.25);
-    overflow: hidden;
-    backdrop-filter: blur(8px);
-    box-shadow: 0 0 30px rgba(255, 215, 0, 0.2);
-}
-
-#battle-field p {
-    margin: 0;
-    font-size: 18px;
-    color: #FFD700;
-    text-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    background: rgba(0, 0, 0, 0.6);
-    padding: 10px 20px;
-    border-radius: 10px;
-    border: 1px solid rgba(255, 215, 0, 0.3);
-}
-
-/* UNIT STYLES */
-.unit {
-    position: absolute;
-    font-size: 38px;
-    bottom: 30px;
-    transition: all 0.5s ease-in-out;
-    animation: float 1.5s infinite ease-in-out;
-    filter: drop-shadow(0 0 12px rgba(255, 255, 255, 0.8));
-    z-index: 5;
-    text-shadow: 0 0 15px currentColor;
-}
-
-@keyframes float {
-    0% { 
-        transform: translateY(0px) rotate(0deg); 
-    }
-    25% { 
-        transform: translateY(-18px) rotate(8deg); 
-    }
-    50% { 
-        transform: translateY(-25px) rotate(0deg); 
-    }
-    75% { 
-        transform: translateY(-18px) rotate(-8deg); 
-    }
-    100% { 
-        transform: translateY(0px) rotate(0deg); 
-    }
-}
-
-/* ATTACK PROJECTILE ANIMATIONS */
-.projectile {
-    position: absolute;
-    z-index: 10;
-    pointer-events: none;
-    filter: drop-shadow(0 0 8px rgba(255, 255, 0, 0.9));
-}
-
-/* ARCHER - Arrow Attack */
-@keyframes arrowAttack {
-    0% {
-        transform: translate(0, 0) rotate(0deg) scale(1);
-        opacity: 1;
-    }
-    80% {
-        transform: translate(320px, -35px) rotate(45deg) scale(1);
-        opacity: 1;
-    }
-    100% {
-        transform: translate(380px, -45px) rotate(60deg) scale(0.8);
-        opacity: 0;
-    }
-}
-
-/* MAGE - Fireball Attack */
-@keyframes fireballAttack {
-    0% {
-        transform: translate(0, 0) scale(1);
-        opacity: 1;
-        filter: brightness(1) drop-shadow(0 0 8px red);
-    }
-    70% {
-        transform: translate(340px, -20px) scale(1.5);
-        opacity: 1;
-        filter: brightness(1.8) drop-shadow(0 0 20px orange);
-    }
-    100% {
-        transform: translate(400px, 0) scale(0.6);
-        opacity: 0;
-        filter: brightness(0.6) drop-shadow(0 0 8px yellow);
-    }
-}
-
-/* TANK - Shield Attack */
-@keyframes shieldAttack {
-    0% {
-        transform: translate(0, 0) rotate(0deg) scale(1);
-        opacity: 1;
-    }
-    30% {
-        transform: translate(150px, 0) rotate(180deg) scale(1.2);
-        opacity: 1;
-    }
-    60% {
-        transform: translate(280px, 12px) rotate(360deg) scale(1);
-        opacity: 1;
-    }
-    100% {
-        transform: translate(400px, 0) rotate(540deg) scale(0.8);
-        opacity: 0;
-    }
-}
-
-/* DEFAULT ATTACK */
-@keyframes defaultAttack {
-    0% {
-        transform: translate(0, 0) scale(1);
-        opacity: 1;
-    }
-    80% {
-        transform: translate(320px, 0) scale(1);
-        opacity: 1;
-    }
-    100% {
-        transform: translate(400px, 0) scale(0.5);
-        opacity: 0;
-    }
-}
-
-/* HIT PARTICLE ANIMATION */
-@keyframes hitParticle {
-    0% {
-        transform: translate(0, 0) scale(1) rotate(0deg);
-        opacity: 1;
-    }
-    50% {
-        transform: translate(var(--end-x), var(--end-y)) scale(1.3) rotate(180deg);
-        opacity: 0.9;
-    }
-    100% {
-        transform: translate(calc(var(--end-x) * 1.5), calc(var(--end-y) * 1.5)) scale(0) rotate(360deg);
-        opacity: 0;
-    }
-}
-
-/* COMBO EFFECTS */
-.combo-effect {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    font-size: 56px;
-    font-weight: bold;
-    color: gold;
-    text-shadow: 
-        0 0 15px red, 
-        0 0 30px orange, 
-        0 0 45px yellow,
-        0 0 60px gold;
-    animation: comboGlow 1.5s ease-out;
-    z-index: 100;
-    pointer-events: none;
-}
-
-@keyframes comboGlow {
-    0% { 
-        transform: translate(-50%, -50%) scale(0.3);
-        opacity: 0;
-        filter: blur(25px);
-    }
-    50% { 
-        transform: translate(-50%, -50%) scale(1.4);
-        opacity: 1;
-        filter: blur(0px);
-    }
-    100% { 
-        transform: translate(-50%, -50%) scale(1);
-        opacity: 0;
-        filter: blur(15px);
-    }
-}
-
-/* EVOLUTION EFFECTS */
-.evolution-effect {
-    position: absolute;
-    top: 30%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    font-size: 46px;
-    font-weight: bold;
-    color: #FFD700;
-    text-shadow: 
-        0 0 15px #FF6B00, 
-        0 0 30px #FF8C00,
-        0 0 45px #FFA500;
-    animation: evolutionGlow 2s ease-out;
-    z-index: 90;
-    pointer-events: none;
-}
-
-@keyframes evolutionGlow {
-    0% { 
-        transform: translate(-50%, -50%) scale(0.8);
-        opacity: 0;
-        filter: blur(20px) hue-rotate(0deg);
-    }
-    25% {
-        transform: translate(-50%, -50%) scale(1.2);
-        opacity: 0.9;
-        filter: blur(8px) hue-rotate(90deg);
-    }
-    50% { 
-        transform: translate(-50%, -50%) scale(1.4);
-        opacity: 1;
-        filter: blur(0px) hue-rotate(180deg);
-        text-shadow: 
-            0 0 25px #FF6B00, 
-            0 0 50px #FF8C00,
-            0 0 75px #FFA500;
-    }
-    75% {
-        transform: translate(-50%, -50%) scale(1.2);
-        opacity: 0.9;
-        filter: blur(8px) hue-rotate(270deg);
-    }
-    100% { 
-        transform: translate(-50%, -50%) scale(1);
-        opacity: 0;
-        filter: blur(15px) hue-rotate(360deg);
-    }
-}
-
-/* CONTROLS */
-#controls {
-    background: rgba(0, 0, 0, 0.3);
-    padding: 25px;
-    border-radius: 18px;
-    margin: 25px 0;
-    border: 2px solid rgba(255, 215, 0, 0.2);
-    backdrop-filter: blur(12px);
-    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
-}
-
-#controls h3 {
-    margin-top: 0;
-    color: #FFD700;
-    text-shadow: 0 0 15px rgba(255, 215, 0, 0.6);
-    font-size: 22px;
-    margin-bottom: 20px;
-    border-bottom: 2px solid rgba(255, 215, 0, 0.3);
-    padding-bottom: 12px;
-}
-
-button {
-    background: linear-gradient(135deg, #4CAF50, #45a049);
-    color: white;
-    border: none;
-    padding: 16px 28px;
-    margin: 10px;
-    border-radius: 12px;
-    font-size: 18px;
-    font-weight: bold;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    box-shadow: 0 6px 15px rgba(0, 0, 0, 0.3);
-    border: 2px solid rgba(255, 255, 255, 0.15);
-    min-width: 140px;
-}
-
-button:hover {
-    background: linear-gradient(135deg, #45a049, #4CAF50);
-    transform: translateY(-3px) scale(1.05);
-    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.4);
-}
-
-button:active {
-    transform: translateY(0) scale(1);
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
-}
-
-/* GAME INSTRUCTIONS */
-#instructions {
-    background: rgba(0, 0, 0, 0.25);
-    padding: 25px;
-    border-radius: 18px;
-    margin: 25px 0;
-    border: 2px solid rgba(255, 215, 0, 0.2);
-    backdrop-filter: blur(12px);
-    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
-}
-
-#instructions h3 {
-    margin-top: 0;
-    color: #FFD700;
-    text-shadow: 0 0 12px rgba(255, 215, 0, 0.6);
-    font-size: 24px;
-    margin-bottom: 25px;
-    text-align: center;
-    border-bottom: 2px solid rgba(255, 215, 0, 0.3);
-    padding-bottom: 15px;
-}
-
-.instruction-section {
-    margin-bottom: 25px;
-    padding: 20px;
-    background: rgba(255, 255, 255, 0.08);
-    border-radius: 12px;
-    border: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-.instruction-section h4 {
-    color: #4ECDC4;
-    text-shadow: 0 0 10px rgba(78, 205, 196, 0.5);
-    font-size: 18px;
-    margin-bottom: 15px;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-}
-
-.instruction-section h4::before {
-    content: "✨";
-    font-size: 20px;
-}
-
-/* COMBO SYSTEM STYLES */
-.combo-info {
-    text-align: center;
-}
-
-.combo-item {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 15px;
-    margin: 12px 0;
-    padding: 12px;
-    background: rgba(255, 255, 255, 0.05);
-    border-radius: 10px;
-    border: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-.combo-units {
-    font-size: 24px;
-    font-weight: bold;
-    text-shadow: 0 0 10px rgba(255, 255, 255, 0.7);
-}
-
-.combo-arrow {
-    font-size: 20px;
-    color: #FFD700;
-    font-weight: bold;
-}
-
-.combo-result {
-    font-size: 16px;
-    color: #FF6B6B;
-    font-weight: bold;
-    text-shadow: 0 0 8px rgba(255, 107, 107, 0.5);
-}
-
-.combo-note {
-    font-size: 14px;
-    color: #4ECDC4;
-    font-style: italic;
-    margin-top: 15px;
-    text-align: center;
-}
-
-/* EVOLUTION SYSTEM STYLES */
-.evolution-path {
-    margin: 15px 0;
-    padding: 15px;
-    background: rgba(255, 255, 255, 0.06);
-    border-radius: 10px;
-    border: 1px solid rgba(255, 255, 255, 0.08);
-}
-
-.path-title {
-    font-weight: bold;
-    color: #FFD700;
-    margin-bottom: 10px;
-    font-size: 16px;
-}
-
-.path-stages {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 10px;
-    margin: 10px 0;
-}
-
-.stage {
-    font-size: 28px;
-    padding: 8px;
-    background: rgba(0, 0, 0, 0.3);
-    border-radius: 8px;
-    border: 2px solid rgba(255, 255, 255, 0.2);
-    transition: all 0.3s ease;
-}
-
-.stage:hover {
-    transform: scale(1.1);
-    border-color: rgba(255, 215, 0, 0.5);
-}
-
-.arrow {
-    color: #4ECDC4;
-    font-weight: bold;
-    font-size: 18px;
-}
-
-.path-desc {
-    font-size: 14px;
-    color: #FF6B6B;
-    font-weight: bold;
-    margin-top: 8px;
-}
-
-.evolution-note {
-    font-size: 14px;
-    color: #4ECDC4;
-    font-style: italic;
-    text-align: center;
-    margin-top: 15px;
-    font-weight: bold;
-}
-
-/* PROGRESS BARS STYLES */
-.progress-bars {
     display: flex;
     flex-direction: column;
     gap: 15px;
 }
 
-.progress-item {
+/* HEADER */
+#game-header {
+    text-align: center;
+    padding: 15px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 15px;
+    border: 2px solid rgba(255, 255, 255, 0.2);
+    backdrop-filter: blur(10px);
+}
+
+#game-header h1 {
+    font-size: 2.5em;
+    background: linear-gradient(45deg, #ff6b6b, #4ecdc4, #45b7d1);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    text-shadow: 0 0 30px rgba(78, 205, 196, 0.5);
+    margin-bottom: 10px;
+}
+
+#game-status {
+    font-size: 1.2em;
+    color: #4ecdc4;
+    font-weight: bold;
+}
+
+/* PLAYER AREAS */
+.player-area {
     display: flex;
     align-items: center;
-    gap: 15px;
-    padding: 12px;
-    background: rgba(255, 255, 255, 0.06);
-    border-radius: 10px;
+    gap: 20px;
+    padding: 15px;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 12px;
     border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
-.progress-label {
-    font-weight: bold;
-    color: #FFD700;
-    min-width: 100px;
-    text-align: left;
-    font-size: 16px;
+.player-info {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    min-width: 150px;
 }
 
-.progress-bar {
-    flex: 1;
+.player-name {
+    font-size: 1.3em;
+    font-weight: bold;
+    color: #ffd700;
+    text-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
+}
+
+.health-bar {
+    width: 120px;
     height: 20px;
     background: rgba(255, 255, 255, 0.1);
     border-radius: 10px;
     overflow: hidden;
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.3);
+    border: 1px solid rgba(255, 255, 255, 0.3);
 }
 
-.progress-fill {
+.health-fill {
     height: 100%;
-    background: linear-gradient(90deg, #FF6B6B, #4ECDC4, #45B7D1);
+    background: linear-gradient(90deg, #ff6b6b, #4ecdc4);
     border-radius: 10px;
-    transition: width 0.5s ease-in-out;
-    box-shadow: 0 0 10px rgba(78, 205, 196, 0.5);
+    transition: width 0.3s ease;
+    width: 100%;
 }
 
-.progress-text {
+.health-text {
+    font-size: 0.9em;
+    color: #ffd700;
     font-weight: bold;
-    color: #FFD700;
-    min-width: 50px;
-    text-align: center;
-    font-size: 14px;
-    text-shadow: 0 0 8px rgba(255, 215, 0, 0.5);
 }
 
-/* GAME LOG */
-#game-log {
-    background: rgba(0, 0, 0, 0.25);
-    padding: 25px;
-    border-radius: 18px;
-    border: 2px solid rgba(255, 215, 0, 0.2);
-    backdrop-filter: blur(12px);
-    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
-}
-
-#game-log h3 {
-    margin-top: 0;
-    color: #FFD700;
-    text-shadow: 0 0 12px rgba(255, 215, 0, 0.6);
-    font-size: 22px;
-    margin-bottom: 20px;
-    border-bottom: 2px solid rgba(255, 215, 0, 0.3);
-    padding-bottom: 12px;
-}
-
-#log {
-    max-height: 250px;
-    overflow-y: auto;
-    background: rgba(0, 0, 0, 0.2);
-    padding: 15px;
-    border-radius: 12px;
-    border: 1px solid rgba(255, 255, 255, 0.08);
-}
-
-.log-entry {
-    margin: 10px 0;
-    padding: 12px;
-    border-left: 4px solid #4CAF50;
-    background: rgba(255, 255, 255, 0.08);
+.board {
+    flex: 1;
+    display: flex;
+    gap: 10px;
+    min-height: 120px;
+    padding: 10px;
+    background: rgba(0, 0, 0, 0.3);
     border-radius: 8px;
-    transition: all 0.3s ease;
-    font-size: 14px;
-    line-height: 1.4;
+    border: 1px dashed rgba(255, 255, 255, 0.2);
 }
 
-.log-entry:hover {
-    background: rgba(255, 255, 255, 0.12);
-    transform: translateX(5px);
+/* BATTLE FIELD */
+#battle-field {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 20px;
+    background: rgba(255, 255, 255, 0.03);
+    border-radius: 15px;
+    border: 2px solid rgba(255, 215, 0, 0.3);
+    margin: 10px 0;
 }
 
-/* Special log entry styles */
-.log-entry:contains("EVOLUTION"),
-.log-entry:contains("EVOLVE") {
-    border-left-color: #FFD700;
+.battle-zone {
+    flex: 1;
+    display: flex;
+    gap: 8px;
+    min-height: 100px;
+    padding: 10px;
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 8px;
+}
+
+.battle-center {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    padding: 0 20px;
+}
+
+#turn-indicator {
+    font-size: 1.1em;
+    font-weight: bold;
+    color: #ffd700;
     background: rgba(255, 215, 0, 0.1);
-    font-weight: bold;
+    padding: 8px 16px;
+    border-radius: 20px;
+    border: 1px solid rgba(255, 215, 0, 0.3);
 }
 
-.log-entry:contains("COMBO") {
-    border-left-color: #FF6B6B;
-    background: rgba(255, 107, 107, 0.1);
+#mana-display {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 1.2em;
     font-weight: bold;
+    color: #45b7d1;
 }
 
-.log-entry:contains("VICTORY"),
-.log-entry:contains("DEFEATED") {
-    border-left-color: #4CAF50;
-    background: rgba(76, 175, 80, 0.15);
+.mana-icon {
+    font-size: 1.4em;
+}
+
+/* HAND CONTAINER */
+#hand-container {
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 12px;
+    padding: 15px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+#hand-title {
+    font-size: 1.2em;
+    font-weight: bold;
+    color: #4ecdc4;
+    margin-bottom: 10px;
+    text-align: center;
+}
+
+#player-hand {
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+    min-height: 140px;
+    padding: 10px;
+}
+
+/* CARD STYLES */
+.card {
+    width: 100px;
+    height: 140px;
+    background: linear-gradient(135deg, #2c3e50, #4ca1af);
+    border-radius: 8px;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    display: flex;
+    flex-direction: column;
+    padding: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    position: relative;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+}
+
+.card:hover {
+    transform: translateY(-10px) scale(1.05);
+    border-color: #ffd700;
+    box-shadow: 0 8px 25px rgba(255, 215, 0, 0.3);
+}
+
+.card.creature {
+    background: linear-gradient(135deg, #27ae60, #2ecc71);
+}
+
+.card.spell {
+    background: linear-gradient(135deg, #8e44ad, #9b59b6);
+}
+
+.card.support {
+    background: linear-gradient(135deg, #e74c3c, #e67e22);
+}
+
+.card-cost {
+    position: absolute;
+    top: 5px;
+    left: 5px;
+    background: rgba(0, 0, 0, 0.7);
+    color: #ffd700;
+    padding: 2px 6px;
+    border-radius: 50%;
+    font-weight: bold;
+    font-size: 0.8em;
+}
+
+.card-name {
+    font-size: 0.7em;
     font-weight: bold;
     text-align: center;
-    font-size: 16px;
+    margin-top: 25px;
+    color: white;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
 }
 
-/* Scrollbar styling */
-#log::-webkit-scrollbar {
-    width: 8px;
+.card-stats {
+    position: absolute;
+    bottom: 5px;
+    width: calc(100% - 16px);
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.8em;
+    font-weight: bold;
 }
 
-#log::-webkit-scrollbar-track {
+.card-attack {
+    background: rgba(231, 76, 60, 0.8);
+    padding: 2px 6px;
+    border-radius: 10px;
+}
+
+.card-health {
+    background: rgba(46, 204, 113, 0.8);
+    padding: 2px 6px;
+    border-radius: 10px;
+}
+
+.card-effect {
+    font-size: 0.6em;
+    text-align: center;
+    margin-top: 5px;
+    color: rgba(255, 255, 255, 0.8);
+}
+
+/* GAME CONTROLS */
+#game-controls {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.control-btn {
+    background: linear-gradient(135deg, #4ecdc4, #45b7d1);
+    color: white;
+    border: none;
+    padding: 12px 24px;
+    border-radius: 8px;
+    font-size: 1em;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.control-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(78, 205, 196, 0.4);
+}
+
+.control-btn:disabled {
+    background: rgba(255, 255, 255, 0.2);
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+}
+
+#game-stats {
+    display: flex;
+    gap: 20px;
+    font-weight: bold;
+    color: #ffd700;
+}
+
+/* TIKTOK PANEL */
+#tiktok-panel {
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 12px;
+    padding: 20px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+#tiktok-panel h3 {
+    color: #ff0050;
+    margin-bottom: 15px;
+    text-align: center;
+    font-size: 1.3em;
+}
+
+.gift-info {
+    display: flex;
+    justify-content: space-around;
+    margin-bottom: 15px;
+}
+
+.gift-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 12px;
     background: rgba(255, 255, 255, 0.1);
-    border-radius: 4px;
+    border-radius: 8px;
 }
 
-#log::-webkit-scrollbar-thumb {
-    background: linear-gradient(135deg, #4ECDC4, #45B7D1);
-    border-radius: 4px;
+.gift-emoji {
+    font-size: 1.2em;
 }
 
-#log::-webkit-scrollbar-thumb:hover {
-    background: linear-gradient(135deg, #45B7D1, #4ECDC4);
+.gift-desc {
+    font-size: 0.9em;
+    color: #4ecdc4;
 }
 
-/* Responsive Design */
+#live-chat-preview {
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 8px;
+    padding: 10px;
+    max-height: 100px;
+    overflow-y: auto;
+}
+
+.chat-message {
+    padding: 5px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    font-size: 0.9em;
+}
+
+/* CARD TOOLTIP */
+#card-tooltip {
+    position: absolute;
+    background: rgba(0, 0, 0, 0.9);
+    border: 2px solid #ffd700;
+    border-radius: 8px;
+    padding: 12px;
+    color: white;
+    z-index: 1000;
+    max-width: 200px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
+}
+
+#card-tooltip.hidden {
+    display: none;
+}
+
+#tooltip-name {
+    font-weight: bold;
+    color: #ffd700;
+    margin-bottom: 5px;
+}
+
+#tooltip-cost {
+    color: #4ecdc4;
+    margin-bottom: 5px;
+}
+
+#tooltip-effect {
+    font-size: 0.9em;
+    color: rgba(255, 255, 255, 0.8);
+}
+
+/* RESPONSIVE DESIGN */
 @media (max-width: 768px) {
     #game-container {
-        margin: 10px;
-        padding: 15px;
+        padding: 10px;
     }
     
-    #boss-image {
-        font-size: 48px;
+    .player-area {
+        flex-direction: column;
     }
     
-    .unit {
-        font-size: 28px;
-    }
-    
-    button {
-        padding: 14px 20px;
-        font-size: 16px;
-        margin: 8px;
-        min-width: 120px;
+    .card {
+        width: 80px;
+        height: 112px;
     }
     
     #battle-field {
-        height: 200px;
-    }
-    
-    .progress-item {
         flex-direction: column;
-        gap: 8px;
-        text-align: center;
+        gap: 15px;
     }
     
-    .progress-label {
-        min-width: auto;
+    .battle-center {
+        flex-direction: row;
+        padding: 10px;
     }
 }
 
-/* Loading animation */
-@keyframes fadeIn {
-    from { opacity: 0; transform: translateY(30px); }
-    to { opacity: 1; transform: translateY(0); }
+/* ANIMATIONS */
+@keyframes cardDraw {
+    0% { transform: scale(0.5); opacity: 0; }
+    100% { transform: scale(1); opacity: 1; }
 }
 
-#game-container {
-    animation: fadeIn 1s ease-out;
+.card-draw {
+    animation: cardDraw 0.5s ease-out;
 }
 
-.instruction-section {
-    animation: fadeIn 0.8s ease-out;
+@keyframes pulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+    100% { transform: scale(1); }
 }
 
-/* Particle effects */
-.particle {
-    position: absolute;
-    pointer-events: none;
-    z-index: 99;
-    animation: particleFloat 2s ease-out forwards;
-}
-
-@keyframes particleFloat {
-    0% {
-        transform: translate(0, 0) scale(1);
-        opacity: 1;
-    }
-    100% {
-        transform: translate(var(--tx), var(--ty)) scale(0);
-        opacity: 0;
-    }
+.pulse {
+    animation: pulse 1s infinite;
 }
