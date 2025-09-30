@@ -46,23 +46,32 @@ function summonUnit(type) {
     }, 1000);
 }
 
+// Remove Unit After Attack
+function removeUnit(unitId) {
+    const unitElement = document.getElementById(unitId);
+    if (unitElement) {
+        unitElement.style.opacity = '0';
+        setTimeout(() => {
+            unitElement.remove();
+        }, 500);
+    }
+}
+
 // Create Unit Visual
 function createUnitVisual(type, emoji) {
     const battleField = document.getElementById('battle-field');
     const unitElement = document.createElement('div');
     
+    const unitId = 'unit-' + Date.now();
+    
     unitElement.className = 'unit';
+    unitElement.id = unitId;
     unitElement.textContent = emoji;
-    unitElement.style.left = (Math.random() * 100) + 'px';
-    unitElement.style.animationDelay = (Math.random() * 0.5) + 's';
+    unitElement.style.left = (Math.random() * 200) + 'px';
     
     battleField.appendChild(unitElement);
     
-    // Remove old units if too many
-    const allUnits = battleField.getElementsByClassName('unit');
-    if (allUnits.length > 8) {
-        battleField.removeChild(allUnits[0]);
-    }
+    return unitId;
 }
 
 // Start Combat System
