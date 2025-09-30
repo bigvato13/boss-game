@@ -1,142 +1,107 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>TTCC</title>
+    <title>🎴 TikTok TCG Live</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
     <div id="game-container">
-        <h1>🎮 TTCC Battlefield 🎮</h1>
-        
-        <!-- BOSS SECTION -->
-        <div id="boss">
-            <div id="boss-health-bar">
-                <div id="boss-health"></div>
-            </div>
-            <div id="boss-stats">Health: <span id="health-text">10000</span>/10000</div>
+        <!-- HEADER -->
+        <div id="game-header">
+            <h1>🎴 TIKTOK TCG LIVE</h1>
+            <div id="game-status">🟢 Waiting for players...</div>
         </div>
 
-        <!-- BATTLE FIELD DENGAN BOSS DI DALAM -->
+        <!-- OPPONENT AREA -->
+        <div id="opponent-area" class="player-area">
+            <div class="player-info">
+                <span class="player-name">👑 STREAMER</span>
+                <div class="health-bar">
+                    <div class="health-fill" id="opponent-health"></div>
+                </div>
+                <span class="health-text" id="opponent-health-text">30/30</span>
+            </div>
+            <div class="board" id="opponent-board">
+                <!-- Opponent's cards will appear here -->
+            </div>
+        </div>
+
+        <!-- BATTLE FIELD -->
         <div id="battle-field">
-            <div id="boss-container">
-                <div id="boss-image">👹</div>
-                <div id="boss-name">SIVA</div>
-            </div>
-            <p>⚔️ BATTLE ARENA - Summon units to fight! ⚔️</p>
-        </div>
-
-        <!-- CONTROLS -->
-        <div id="controls">
-            <h3>🎯 SUMMON UNITS:</h3>
-            <button onclick="summonUnit('archer')">🎯 Awal</button>
-            <button onclick="summonUnit('mage')">🔥 Didip</button>
-            <button onclick="summonUnit('tank')">🛡️ Aqil</button>
-            <button onclick="resetGame()">🔄 Reset Game</button>
-        </div>
-
-        <!-- GAME INSTRUCTIONS -->
-        <div id="instructions">
-            <h3>📚 GAME GUIDE:</h3>
-            
-            <div class="instruction-section">
-                <h4>⚔️ COMBO SYSTEM:</h4>
-                <div class="combo-info">
-                    <div class="combo-item">
-                        <span class="combo-units">🎯🎯🎯</span>
-                        <span class="combo-arrow">→</span>
-                        <span class="combo-result">🌧️ ARROW RAIN (150 damage)</span>
-                    </div>
-                    <div class="combo-item">
-                        <span class="combo-units">🔥🔥🔥</span>
-                        <span class="combo-arrow">→</span>
-                        <span class="combo-result">☄️ METEOR STRIKE (200 damage)</span>
-                    </div>
-                    <div class="combo-item">
-                        <span class="combo-units">🛡️🛡️🛡️</span>
-                        <span class="combo-arrow">→</span>
-                        <span class="combo-result">💥 SHIELD BASH (100 damage)</span>
-                    </div>
-                    <p class="combo-note">Click 3x same unit within 10 seconds for SPECIAL ATTACK!</p>
+            <div class="battle-zone" id="opponent-battle-zone"></div>
+            <div class="battle-center">
+                <div id="turn-indicator">Turn 1</div>
+                <div id="mana-display">
+                    <span class="mana-icon">⚡</span>
+                    <span id="current-mana">1</span>/<span id="max-mana">10</span>
                 </div>
             </div>
+            <div class="battle-zone" id="player-battle-zone"></div>
+        </div>
 
-            <div class="instruction-section">
-                <h4>🆙 EVOLUTION SYSTEM:</h4>
-                <div class="evolution-info">
-                    <div class="evolution-path">
-                        <div class="path-title">🎯 ARCHER:</div>
-                        <div class="path-stages">
-                            <span class="stage">🎯</span>
-                            <span class="arrow">→</span>
-                            <span class="stage">🏹</span>
-                            <span class="arrow">→</span>
-                            <span class="stage">💣</span>
-                        </div>
-                        <div class="path-desc">Damage: 50 → 80 → 120</div>
-                    </div>
-                    
-                    <div class="evolution-path">
-                        <div class="path-title">🔥 MAGE:</div>
-                        <div class="path-stages">
-                            <span class="stage">🔥</span>
-                            <span class="arrow">→</span>
-                            <span class="stage">🧙</span>
-                            <span class="arrow">→</span>
-                            <span class="stage">🌟</span>
-                        </div>
-                        <div class="path-desc">Damage: 75 → 110 → 160</div>
-                    </div>
-                    
-                    <div class="evolution-path">
-                        <div class="path-title">🛡️ TANK:</div>
-                        <div class="path-stages">
-                            <span class="stage">🛡️</span>
-                            <span class="arrow">→</span>
-                            <span class="stage">⚔️</span>
-                            <span class="arrow">→</span>
-                            <span class="stage">🛡️✨</span>
-                        </div>
-                        <div class="path-desc">Damage: 30 → 50 → 80</div>
-                    </div>
-                    <p class="evolution-note">Every 5 summons of same unit = AUTO EVOLVE!</p>
-                </div>
+        <!-- PLAYER AREA -->
+        <div id="player-area" class="player-area">
+            <div class="board" id="player-board">
+                <!-- Player's cards will appear here -->
             </div>
-
-            <div class="instruction-section">
-                <h4>📈 CURRENT PROGRESS:</h4>
-                <div class="progress-bars">
-                    <div class="progress-item">
-                        <div class="progress-label">🎯 Archer:</div>
-                        <div class="progress-bar">
-                            <div class="progress-fill" id="archer-progress" style="width: 0%"></div>
-                        </div>
-                        <div class="progress-text" id="archer-text">0/5</div>
-                    </div>
-                    
-                    <div class="progress-item">
-                        <div class="progress-label">🔥 Mage:</div>
-                        <div class="progress-bar">
-                            <div class="progress-fill" id="mage-progress" style="width: 0%"></div>
-                        </div>
-                        <div class="progress-text" id="mage-text">0/5</div>
-                    </div>
-                    
-                    <div class="progress-item">
-                        <div class="progress-label">🛡️ Tank:</div>
-                        <div class="progress-bar">
-                            <div class="progress-fill" id="tank-progress" style="width: 0%"></div>
-                        </div>
-                        <div class="progress-text" id="tank-text">0/5</div>
-                    </div>
+            <div class="player-info">
+                <span class="player-name">🎯 VIEWERS</span>
+                <div class="health-bar">
+                    <div class="health-fill" id="player-health"></div>
                 </div>
+                <span class="health-text" id="player-health-text">30/30</span>
             </div>
         </div>
 
-        <!-- GAME LOG -->
-        <div id="game-log">
-            <h3>📜 BATTLE LOG:</h3>
-            <div id="log"></div>
+        <!-- PLAYER HAND -->
+        <div id="hand-container">
+            <div id="hand-title">Your Hand</div>
+            <div id="player-hand">
+                <!-- Cards in hand will appear here -->
+            </div>
         </div>
+
+        <!-- GAME CONTROLS -->
+        <div id="game-controls">
+            <button id="end-turn-btn" class="control-btn">⏩ End Turn</button>
+            <button id="draw-card-btn" class="control-btn">🃏 Draw Card</button>
+            <div id="game-stats">
+                <span>Deck: <span id="deck-count">20</span></span>
+                <span>Hand: <span id="hand-count">0</span>/10</span>
+            </div>
+        </div>
+
+        <!-- TIKTOK LIVE INFO -->
+        <div id="tiktok-panel">
+            <h3>🎁 TikTok Live Controls</h3>
+            <div class="gift-info">
+                <div class="gift-item">
+                    <span class="gift-emoji">🌹</span>
+                    <span class="gift-desc">= Draw 1 Card</span>
+                </div>
+                <div class="gift-item">
+                    <span class="gift-emoji">🚀</span>
+                    <span class="gift-desc">= Extra Mana</span>
+                </div>
+                <div class="gift-item">
+                    <span class="gift-emoji">🦁</span>
+                    <span class="gift-desc">= Special Card</span>
+                </div>
+            </div>
+            <div id="live-chat-preview">
+                <div class="chat-message">User123: Play the fireball! 🔥</div>
+                <div class="chat-message">TCGFan: We need more creatures! 🐲</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- CARD TOOLTIP -->
+    <div id="card-tooltip" class="hidden">
+        <div id="tooltip-name">Card Name</div>
+        <div id="tooltip-cost">Cost: 0</div>
+        <div id="tooltip-effect">Effect: Does something</div>
     </div>
 
     <script src="game.js"></script>
