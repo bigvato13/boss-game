@@ -61,6 +61,7 @@ const unitTypes = {
 // Initialize Game
 function initGame() {
     updateBossHealth();
+    updateProgressBars();
     addLog("🎮 Game started! Boss is waiting for challengers...");
 }
 
@@ -81,6 +82,9 @@ function summonUnit(type) {
     // COMBO SYSTEM TRACKING
     trackCombo(type);
     
+    // UPDATE PROGRESS BARS
+    updateProgressBars();
+    
     // ATTACK ANIMATION SEQUENCE
     setTimeout(() => {
         // SHOW ATTACK PROJECTILE (dengan evolution stage)
@@ -92,8 +96,11 @@ function summonUnit(type) {
             bossHealth = Math.max(0, bossHealth - unit.damage);
             updateBossHealth();
             
+            // BOSS HIT ANIMATION
+            showBossHitAnimation();
+            
             // Show attack message dengan evolution info
-            addLog(`⚔️ ${unit.emoji} dealt ${unit.damage} damage!`);
+            addLog(`⚔️ ${unit.emoji} dealt ${unit.damage} damage to boss!`);
             
             // Remove unit after attack
             removeUnit(unitId);
@@ -181,6 +188,73 @@ function getProjectileData(unitType, evolutionStage) {
     return projectiles[unitType][stageIndex] || { emoji: '⭐', size: 20, animation: 'defaultAttack' };
 }
 
+// BOSS HIT ANIMATION
+function showBossHitAnimation() {
+    const bossImage = document.getElementById('boss-image');
+    if (!bossImage) return;
+    
+    // Add hit class
+    bossImage.classList.add('boss-hit');
+    
+    // Create hit effect particles
+    createHitParticles();
+    
+    // Remove hit class after animation
+    setTimeout(() => {
+        bossImage.classList.remove('boss-hit');
+    }, 500);
+}
+
+// HIT PARTICLE EFFECTS
+function createHitParticles() {
+    const bossContainer = document.getElementById('boss-container');
+    if (!bossContainer) return;
+    
+    const particles = ['💥', '✨', '⭐', '🔥', '💫', '🌟'];
+    
+    for (let i = 0; i < 8; i++) {
+        setTimeout(() => {
+            const particle = document.createElement('div');
+            particle.textContent = particles[Math.floor(Math.random() * particles.length)];
+            particle.style.cssText = `
+                position: absolute;
+                font-size: 20px;
+                pointer-events: none;
+                z-index: 15;
+                animation: hitParticle 1s ease-out forwards;
+            `;
+            
+            // Position around boss
+            const bossRect = bossContainer.getBoundingClientRect();
+            const battleRect = document.getElementById('battle-field').getBoundingClientRect();
+            
+            const startX = bossRect.left - battleRect.left - 20;
+            const startY = bossRect.top - battleRect.top + 40;
+            
+            particle.style.left = startX + 'px';
+            particle.style.top = startY + 'px';
+            
+            // Random movement
+            const angle = Math.random() * Math.PI * 2;
+            const distance = 50 + Math.random() * 80;
+            const endX = Math.cos(angle) * distance;
+            const endY = Math.sin(angle) * distance;
+            
+            particle.style.setProperty('--end-x', endX + 'px');
+            particle.style.setProperty('--end-y', endY + 'px');
+            
+            document.getElementById('battle-field').appendChild(particle);
+            
+            // Remove particle after animation
+            setTimeout(() => {
+                if (particle.parentNode) {
+                    particle.parentNode.removeChild(particle);
+                }
+            }, 1000);
+        }, i * 80);
+    }
+}
+
 // EVOLUTION SYSTEM - Get Current Stage
 function getCurrentEvolutionStage(unitType) {
     const stages = unitTypes[unitType].evolution;
@@ -203,10 +277,13 @@ function trackEvolution(unitType) {
         evolveUnit(unitType);
     }
     
-    // Show evolution progress
+    // Show evolution progress in log
     const progress = evolutionLevel[unitType].count;
     const stage = evolutionLevel[unitType].stage;
     addLog(`📈 ${unitTypes[unitType].emoji} Evolution: ${progress}/5 (Stage ${stage})`);
+    
+    // Update progress bars
+    updateProgressBars();
 }
 
 // EVOLUTION SYSTEM - Evolve Unit Type
@@ -237,6 +314,9 @@ function evolveUnit(unitType) {
     
     // Visual evolution effect
     showEvolutionEffect(unitType, newStage);
+    
+    // Update progress bars
+    updateProgressBars();
 }
 
 // EVOLUTION SYSTEM - Visual Effect
@@ -254,10 +334,10 @@ function showEvolutionEffect(unitType, newStage) {
         top: 30%;
         left: 50%;
         transform: translate(-50%, -50%);
-        font-size: 36px;
+        font-size: 46px;
         font-weight: bold;
         color: #FFD700;
-        text-shadow: 0 0 10px #FF6B00, 0 0 20px #FF8C00;
+        text-shadow: 0 0 15px #FF6B00, 0 0 30px #FF8C00, 0 0 45px #FFA500;
         animation: evolutionGlow 2s ease-out;
         z-index: 90;
     `;
@@ -268,6 +348,54 @@ function showEvolutionEffect(unitType, newStage) {
     setTimeout(() => {
         effect.remove();
     }, 2000);
+}
+
+// PROGRESS BARS SYSTEM - Update All Progress Bars
+function updateProgressBars() {
+    updateProgressBar('archer', evolutionLevel.archer.count, evolutionLevel.archer.stage);
+    updateProgressBar('mage', evolutionLevel.mage.count, evolutionLevel.mage.stage);
+    updateProgressBar('tank', evolutionLevel.tank.count, evolutionLevel.tank.stage);
+}
+
+// PROGRESS BARS SYSTEM - Update Individual Progress Bar
+function updateProgressBar(unitType, count, stage) {
+    const progressFill = document.getElementById(`${unitType}-progress`);
+    const progressText = document.getElementById(`${unitType}-text`);
+    
+    if (!progressFill || !progressText) return;
+    
+    let progressPercent = 0;
+    let displayText = '';
+    
+    if (stage >= 3) {
+        // Already at max evolution
+        progressPercent = 100;
+        displayText = 'MAX';
+        progressFill.style.background = 'linear-gradient(90deg, #FFD700, #FF6B00)';
+    } else {
+        // Calculate progress to next evolution
+        progressPercent = (count / 5) * 100;
+        displayText = `${count}/5`;
+        
+        // Change color based on progress
+        if (progressPercent < 50) {
+            progressFill.style.background = 'linear-gradient(90deg, #FF6B6B, #FF8E8E)';
+        } else if (progressPercent < 80) {
+            progressFill.style.background = 'linear-gradient(90deg, #4ECDC4, #6BE0D9)';
+        } else {
+            progressFill.style.background = 'linear-gradient(90deg, #45B7D1, #67C7E0)';
+        }
+    }
+    
+    progressFill.style.width = progressPercent + '%';
+    progressText.textContent = displayText;
+    
+    // Add pulse animation when almost evolved
+    if (count >= 4 && stage < 3) {
+        progressFill.style.animation = 'progressPulse 1s infinite';
+    } else {
+        progressFill.style.animation = 'none';
+    }
 }
 
 // COMBO SYSTEM - Track Unit Combos
@@ -304,6 +432,9 @@ function activateCombo(unitType) {
     bossHealth = Math.max(0, bossHealth - combo.damage);
     updateBossHealth();
     
+    // BOSS HIT ANIMATION untuk combo
+    showBossHitAnimation();
+    
     // Special effects log
     addLog(`🎇 ${combo.emoji} **${combo.name}** COMBO! ${combo.damage} DAMAGE!`);
     addLog(`💫 PERFECT COORDINATION! EPIC ATTACK!`);
@@ -323,7 +454,7 @@ function showComboEffect(unitType) {
         top: 50%;
         left: 50%;
         transform: translate(-50%, -50%);
-        font-size: 48px;
+        font-size: 56px;
         font-weight: bold;
         color: gold;
         animation: comboGlow 1.5s ease-out;
@@ -369,6 +500,8 @@ function updateBossHealth() {
         healthBar.style.background = 'linear-gradient(90deg, #ff0000, #ff6b6b)';
     } else if (healthPercent < 50) {
         healthBar.style.background = 'linear-gradient(90deg, #ff0000, #ffa726)';
+    } else {
+        healthBar.style.background = 'linear-gradient(90deg, #ff0000, #ff6b6b, #4CAF50)';
     }
 }
 
@@ -382,8 +515,58 @@ function bossDefeated() {
     
     // Show celebration
     document.getElementById('boss-image').textContent = '💀 DEFEATED';
+    document.getElementById('boss-image').style.animation = 'none';
+    document.getElementById('boss-image').style.filter = 'grayscale(1) brightness(0.5)';
+    
+    // Victory particles
+    createVictoryParticles();
     
     setTimeout(resetGame, 5000);
+}
+
+// VICTORY PARTICLE EFFECTS
+function createVictoryParticles() {
+    const battleField = document.getElementById('battle-field');
+    const particles = ['🎉', '✨', '🌟', '💫', '🎊', '⭐'];
+    
+    for (let i = 0; i < 15; i++) {
+        setTimeout(() => {
+            const particle = document.createElement('div');
+            particle.textContent = particles[Math.floor(Math.random() * particles.length)];
+            particle.style.cssText = `
+                position: absolute;
+                font-size: 24px;
+                pointer-events: none;
+                z-index: 20;
+                animation: victoryParticle 2s ease-out forwards;
+            `;
+            
+            // Random start position
+            const startX = Math.random() * 400;
+            const startY = Math.random() * 150;
+            
+            particle.style.left = startX + 'px';
+            particle.style.top = startY + 'px';
+            
+            // Random movement
+            const angle = Math.random() * Math.PI * 2;
+            const distance = 80 + Math.random() * 120;
+            const endX = Math.cos(angle) * distance;
+            const endY = Math.sin(angle) * distance;
+            
+            particle.style.setProperty('--end-x', endX + 'px');
+            particle.style.setProperty('--end-y', endY + 'px');
+            
+            battleField.appendChild(particle);
+            
+            // Remove particle after animation
+            setTimeout(() => {
+                if (particle.parentNode) {
+                    particle.parentNode.removeChild(particle);
+                }
+            }, 2000);
+        }, i * 200);
+    }
 }
 
 // Reset Game
@@ -409,11 +592,18 @@ function resetGame() {
     }
     
     // Clear battle field
-    document.getElementById('battle-field').innerHTML = '<p>Units will appear here...</p>';
-    document.getElementById('boss-image').textContent = '👹 BOSS';
+    document.getElementById('battle-field').innerHTML = `
+        <div id="boss-container">
+            <div id="boss-image">👹</div>
+            <div id="boss-name">BOSS</div>
+        </div>
+        <p>⚔️ BATTLE ARENA - Summon units to fight! ⚔️</p>
+    `;
+    
     document.getElementById('log').innerHTML = '';
     
     updateBossHealth();
+    updateProgressBars();
     addLog("🔄 Game reset! Boss is back with full health!");
     addLog("♻️ All units reset to basic forms!");
 }
@@ -426,9 +616,36 @@ function addLog(message) {
     logEntry.className = 'log-entry';
     logEntry.textContent = message;
     
+    // Auto-scroll to bottom
     log.appendChild(logEntry);
     log.scrollTop = log.scrollHeight;
 }
+
+// Add CSS for progress bar pulse animation
+const style = document.createElement('style');
+style.textContent = `
+    @keyframes progressPulse {
+        0% { opacity: 1; box-shadow: 0 0 10px rgba(78, 205, 196, 0.5); }
+        50% { opacity: 0.8; box-shadow: 0 0 20px rgba(78, 205, 196, 0.8); }
+        100% { opacity: 1; box-shadow: 0 0 10px rgba(78, 205, 196, 0.5); }
+    }
+    
+    @keyframes victoryParticle {
+        0% {
+            transform: translate(0, 0) scale(1) rotate(0deg);
+            opacity: 1;
+        }
+        50% {
+            transform: translate(var(--end-x), var(--end-y)) scale(1.5) rotate(180deg);
+            opacity: 0.9;
+        }
+        100% {
+            transform: translate(calc(var(--end-x) * 1.2), calc(var(--end-y) * 1.2)) scale(0) rotate(360deg);
+            opacity: 0;
+        }
+    }
+`;
+document.head.appendChild(style);
 
 // Initialize game when page loads
 window.onload = initGame;
