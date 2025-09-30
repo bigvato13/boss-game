@@ -1,6 +1,6 @@
 // Game State
-let bossHealth = 1000;
-let maxBossHealth = 1000;
+let bossHealth = 10000;
+let maxBossHealth = 10000;
 let units = [];
 let gameInterval;
 
