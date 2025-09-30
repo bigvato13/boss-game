@@ -8,13 +8,13 @@ body {
 }
 
 #game-container {
-    max-width: 800px;
+    max-width: 900px;
     margin: 0 auto;
     text-align: center;
     background: rgba(0, 0, 0, 0.1);
-    border-radius: 15px;
-    padding: 20px;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+    border-radius: 20px;
+    padding: 25px;
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3);
 }
 
 /* BOSS STYLES */
@@ -24,7 +24,8 @@ body {
     border-radius: 20px;
     margin: 20px 0;
     border: 2px solid rgba(255, 255, 255, 0.1);
-    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
+    backdrop-filter: blur(10px);
 }
 
 #boss-health-bar {
@@ -35,6 +36,7 @@ body {
     margin: 15px 0;
     overflow: hidden;
     border: 2px solid rgba(255, 255, 255, 0.2);
+    box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.3);
 }
 
 #boss-health {
@@ -48,46 +50,100 @@ body {
 #boss-image {
     font-size: 64px;
     margin: 15px 0;
-    text-shadow: 0 0 20px rgba(255, 0, 0, 0.5);
-    animation: bossPulse 3s infinite;
+    text-shadow: 0 0 25px rgba(255, 0, 0, 0.7);
+    animation: bossIdle 3s infinite ease-in-out;
+    filter: drop-shadow(0 0 10px rgba(255, 0, 0, 0.5));
 }
 
-@keyframes bossPulse {
-    0% { transform: scale(1); }
-    50% { transform: scale(1.05); }
-    100% { transform: scale(1); }
+@keyframes bossIdle {
+    0% { transform: translateY(0px) scale(1); }
+    50% { transform: translateY(-12px) scale(1.08); }
+    100% { transform: translateY(0px) scale(1); }
 }
 
 #boss-stats {
-    font-size: 20px;
+    font-size: 22px;
     font-weight: bold;
     color: #FFD700;
-    text-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
+    text-shadow: 0 0 15px rgba(255, 215, 0, 0.7);
+    margin-top: 10px;
+}
+
+/* BOSS CONTAINER DALAM BATTLE FIELD */
+#boss-container {
+    position: absolute;
+    right: 40px;
+    top: 50%;
+    transform: translateY(-50%);
+    text-align: center;
+    z-index: 8;
+}
+
+#boss-name {
+    font-size: 20px;
+    font-weight: bold;
+    color: #FF6B6B;
+    text-shadow: 0 0 12px rgba(255, 0, 0, 0.6);
+    margin-top: 8px;
+    background: rgba(0, 0, 0, 0.4);
+    padding: 5px 15px;
+    border-radius: 10px;
+    border: 1px solid rgba(255, 107, 107, 0.3);
+}
+
+/* BOSS HIT ANIMATION */
+@keyframes bossHit {
+    0% { transform: scale(1) rotate(0deg); }
+    25% { transform: scale(1.15) rotate(-8deg); }
+    50% { transform: scale(1.2) rotate(8deg); }
+    75% { transform: scale(1.15) rotate(-4deg); }
+    100% { transform: scale(1) rotate(0deg); }
+}
+
+.boss-hit {
+    animation: bossHit 0.5s ease-in-out !important;
+    filter: brightness(1.8) drop-shadow(0 0 20px red) contrast(1.5);
 }
 
 /* BATTLE FIELD */
 #battle-field {
-    height: 220px;
-    border: 3px dashed rgba(255, 255, 255, 0.3);
+    height: 250px;
+    border: 3px solid rgba(255, 215, 0, 0.4);
     border-radius: 15px;
     margin: 25px 0;
-    padding: 15px;
+    padding: 20px;
     position: relative;
-    background: rgba(0, 0, 0, 0.2);
+    background: rgba(0, 0, 0, 0.25);
     overflow: hidden;
-    backdrop-filter: blur(5px);
+    backdrop-filter: blur(8px);
+    box-shadow: 0 0 30px rgba(255, 215, 0, 0.2);
+}
+
+#battle-field p {
+    margin: 0;
+    font-size: 18px;
+    color: #FFD700;
+    text-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: rgba(0, 0, 0, 0.6);
+    padding: 10px 20px;
+    border-radius: 10px;
+    border: 1px solid rgba(255, 215, 0, 0.3);
 }
 
 /* UNIT STYLES */
 .unit {
     position: absolute;
-    font-size: 36px;
-    bottom: 25px;
+    font-size: 38px;
+    bottom: 30px;
     transition: all 0.5s ease-in-out;
     animation: float 1.5s infinite ease-in-out;
-    filter: drop-shadow(0 0 8px rgba(255, 255, 255, 0.7));
+    filter: drop-shadow(0 0 12px rgba(255, 255, 255, 0.8));
     z-index: 5;
-    text-shadow: 0 0 10px currentColor;
+    text-shadow: 0 0 15px currentColor;
 }
 
 @keyframes float {
@@ -95,13 +151,13 @@ body {
         transform: translateY(0px) rotate(0deg); 
     }
     25% { 
-        transform: translateY(-15px) rotate(5deg); 
+        transform: translateY(-18px) rotate(8deg); 
     }
     50% { 
-        transform: translateY(-20px) rotate(0deg); 
+        transform: translateY(-25px) rotate(0deg); 
     }
     75% { 
-        transform: translateY(-15px) rotate(-5deg); 
+        transform: translateY(-18px) rotate(-8deg); 
     }
     100% { 
         transform: translateY(0px) rotate(0deg); 
@@ -113,7 +169,7 @@ body {
     position: absolute;
     z-index: 10;
     pointer-events: none;
-    filter: drop-shadow(0 0 5px rgba(255, 255, 0, 0.8));
+    filter: drop-shadow(0 0 8px rgba(255, 255, 0, 0.9));
 }
 
 /* ARCHER - Arrow Attack */
@@ -122,12 +178,12 @@ body {
         transform: translate(0, 0) rotate(0deg) scale(1);
         opacity: 1;
     }
-    70% {
-        transform: translate(250px, -40px) rotate(45deg) scale(1);
+    80% {
+        transform: translate(320px, -35px) rotate(45deg) scale(1);
         opacity: 1;
     }
     100% {
-        transform: translate(350px, -60px) rotate(60deg) scale(0.8);
+        transform: translate(380px, -45px) rotate(60deg) scale(0.8);
         opacity: 0;
     }
 }
@@ -137,17 +193,17 @@ body {
     0% {
         transform: translate(0, 0) scale(1);
         opacity: 1;
-        filter: brightness(1) drop-shadow(0 0 5px red);
+        filter: brightness(1) drop-shadow(0 0 8px red);
     }
-    50% {
-        transform: translate(175px, -20px) scale(1.4);
+    70% {
+        transform: translate(340px, -20px) scale(1.5);
         opacity: 1;
-        filter: brightness(1.5) drop-shadow(0 0 15px orange);
+        filter: brightness(1.8) drop-shadow(0 0 20px orange);
     }
     100% {
-        transform: translate(350px, 0) scale(0.6);
+        transform: translate(400px, 0) scale(0.6);
         opacity: 0;
-        filter: brightness(0.5) drop-shadow(0 0 5px yellow);
+        filter: brightness(0.6) drop-shadow(0 0 8px yellow);
     }
 }
 
@@ -158,15 +214,15 @@ body {
         opacity: 1;
     }
     30% {
-        transform: translate(120px, 0) rotate(180deg) scale(1.1);
+        transform: translate(150px, 0) rotate(180deg) scale(1.2);
         opacity: 1;
     }
     60% {
-        transform: translate(240px, 10px) rotate(360deg) scale(1);
+        transform: translate(280px, 12px) rotate(360deg) scale(1);
         opacity: 1;
     }
     100% {
-        transform: translate(350px, 0) rotate(540deg) scale(0.8);
+        transform: translate(400px, 0) rotate(540deg) scale(0.8);
         opacity: 0;
     }
 }
@@ -178,11 +234,27 @@ body {
         opacity: 1;
     }
     80% {
-        transform: translate(280px, 0) scale(1);
+        transform: translate(320px, 0) scale(1);
         opacity: 1;
     }
     100% {
-        transform: translate(350px, 0) scale(0.5);
+        transform: translate(400px, 0) scale(0.5);
+        opacity: 0;
+    }
+}
+
+/* HIT PARTICLE ANIMATION */
+@keyframes hitParticle {
+    0% {
+        transform: translate(0, 0) scale(1) rotate(0deg);
+        opacity: 1;
+    }
+    50% {
+        transform: translate(var(--end-x), var(--end-y)) scale(1.3) rotate(180deg);
+        opacity: 0.9;
+    }
+    100% {
+        transform: translate(calc(var(--end-x) * 1.5), calc(var(--end-y) * 1.5)) scale(0) rotate(360deg);
         opacity: 0;
     }
 }
@@ -193,14 +265,14 @@ body {
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
-    font-size: 52px;
+    font-size: 56px;
     font-weight: bold;
     color: gold;
     text-shadow: 
-        0 0 10px red, 
-        0 0 20px orange, 
-        0 0 30px yellow,
-        0 0 40px gold;
+        0 0 15px red, 
+        0 0 30px orange, 
+        0 0 45px yellow,
+        0 0 60px gold;
     animation: comboGlow 1.5s ease-out;
     z-index: 100;
     pointer-events: none;
@@ -210,17 +282,17 @@ body {
     0% { 
         transform: translate(-50%, -50%) scale(0.3);
         opacity: 0;
-        filter: blur(20px);
+        filter: blur(25px);
     }
     50% { 
-        transform: translate(-50%, -50%) scale(1.3);
+        transform: translate(-50%, -50%) scale(1.4);
         opacity: 1;
         filter: blur(0px);
     }
     100% { 
         transform: translate(-50%, -50%) scale(1);
         opacity: 0;
-        filter: blur(10px);
+        filter: blur(15px);
     }
 }
 
@@ -230,13 +302,13 @@ body {
     top: 30%;
     left: 50%;
     transform: translate(-50%, -50%);
-    font-size: 42px;
+    font-size: 46px;
     font-weight: bold;
     color: #FFD700;
     text-shadow: 
-        0 0 10px #FF6B00, 
-        0 0 20px #FF8C00,
-        0 0 30px #FFA500;
+        0 0 15px #FF6B00, 
+        0 0 30px #FF8C00,
+        0 0 45px #FFA500;
     animation: evolutionGlow 2s ease-out;
     z-index: 90;
     pointer-events: none;
@@ -246,111 +318,321 @@ body {
     0% { 
         transform: translate(-50%, -50%) scale(0.8);
         opacity: 0;
-        filter: blur(15px) hue-rotate(0deg);
+        filter: blur(20px) hue-rotate(0deg);
     }
     25% {
-        transform: translate(-50%, -50%) scale(1.1);
-        opacity: 0.8;
-        filter: blur(5px) hue-rotate(90deg);
+        transform: translate(-50%, -50%) scale(1.2);
+        opacity: 0.9;
+        filter: blur(8px) hue-rotate(90deg);
     }
     50% { 
-        transform: translate(-50%, -50%) scale(1.3);
+        transform: translate(-50%, -50%) scale(1.4);
         opacity: 1;
         filter: blur(0px) hue-rotate(180deg);
         text-shadow: 
-            0 0 20px #FF6B00, 
-            0 0 40px #FF8C00,
-            0 0 60px #FFA500;
+            0 0 25px #FF6B00, 
+            0 0 50px #FF8C00,
+            0 0 75px #FFA500;
     }
     75% {
-        transform: translate(-50%, -50%) scale(1.1);
-        opacity: 0.8;
-        filter: blur(5px) hue-rotate(270deg);
+        transform: translate(-50%, -50%) scale(1.2);
+        opacity: 0.9;
+        filter: blur(8px) hue-rotate(270deg);
     }
     100% { 
         transform: translate(-50%, -50%) scale(1);
         opacity: 0;
-        filter: blur(10px) hue-rotate(360deg);
+        filter: blur(15px) hue-rotate(360deg);
     }
 }
 
 /* CONTROLS */
 #controls {
-    background: rgba(0, 0, 0, 0.25);
-    padding: 20px;
-    border-radius: 15px;
+    background: rgba(0, 0, 0, 0.3);
+    padding: 25px;
+    border-radius: 18px;
     margin: 25px 0;
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    backdrop-filter: blur(10px);
+    border: 2px solid rgba(255, 215, 0, 0.2);
+    backdrop-filter: blur(12px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
 }
 
 #controls h3 {
     margin-top: 0;
     color: #FFD700;
-    text-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
+    text-shadow: 0 0 15px rgba(255, 215, 0, 0.6);
+    font-size: 22px;
+    margin-bottom: 20px;
+    border-bottom: 2px solid rgba(255, 215, 0, 0.3);
+    padding-bottom: 12px;
 }
 
 button {
     background: linear-gradient(135deg, #4CAF50, #45a049);
     color: white;
     border: none;
-    padding: 14px 24px;
-    margin: 8px;
-    border-radius: 8px;
-    font-size: 16px;
+    padding: 16px 28px;
+    margin: 10px;
+    border-radius: 12px;
+    font-size: 18px;
     font-weight: bold;
     cursor: pointer;
     transition: all 0.3s ease;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-    border: 2px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 6px 15px rgba(0, 0, 0, 0.3);
+    border: 2px solid rgba(255, 255, 255, 0.15);
+    min-width: 140px;
 }
 
 button:hover {
     background: linear-gradient(135deg, #45a049, #4CAF50);
-    transform: translateY(-2px);
-    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
+    transform: translateY(-3px) scale(1.05);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.4);
 }
 
 button:active {
-    transform: translateY(0);
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    transform: translateY(0) scale(1);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+}
+
+/* GAME INSTRUCTIONS */
+#instructions {
+    background: rgba(0, 0, 0, 0.25);
+    padding: 25px;
+    border-radius: 18px;
+    margin: 25px 0;
+    border: 2px solid rgba(255, 215, 0, 0.2);
+    backdrop-filter: blur(12px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
+}
+
+#instructions h3 {
+    margin-top: 0;
+    color: #FFD700;
+    text-shadow: 0 0 12px rgba(255, 215, 0, 0.6);
+    font-size: 24px;
+    margin-bottom: 25px;
+    text-align: center;
+    border-bottom: 2px solid rgba(255, 215, 0, 0.3);
+    padding-bottom: 15px;
+}
+
+.instruction-section {
+    margin-bottom: 25px;
+    padding: 20px;
+    background: rgba(255, 255, 255, 0.08);
+    border-radius: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.instruction-section h4 {
+    color: #4ECDC4;
+    text-shadow: 0 0 10px rgba(78, 205, 196, 0.5);
+    font-size: 18px;
+    margin-bottom: 15px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.instruction-section h4::before {
+    content: "✨";
+    font-size: 20px;
+}
+
+/* COMBO SYSTEM STYLES */
+.combo-info {
+    text-align: center;
+}
+
+.combo-item {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 15px;
+    margin: 12px 0;
+    padding: 12px;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 10px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.combo-units {
+    font-size: 24px;
+    font-weight: bold;
+    text-shadow: 0 0 10px rgba(255, 255, 255, 0.7);
+}
+
+.combo-arrow {
+    font-size: 20px;
+    color: #FFD700;
+    font-weight: bold;
+}
+
+.combo-result {
+    font-size: 16px;
+    color: #FF6B6B;
+    font-weight: bold;
+    text-shadow: 0 0 8px rgba(255, 107, 107, 0.5);
+}
+
+.combo-note {
+    font-size: 14px;
+    color: #4ECDC4;
+    font-style: italic;
+    margin-top: 15px;
+    text-align: center;
+}
+
+/* EVOLUTION SYSTEM STYLES */
+.evolution-path {
+    margin: 15px 0;
+    padding: 15px;
+    background: rgba(255, 255, 255, 0.06);
+    border-radius: 10px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.path-title {
+    font-weight: bold;
+    color: #FFD700;
+    margin-bottom: 10px;
+    font-size: 16px;
+}
+
+.path-stages {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    margin: 10px 0;
+}
+
+.stage {
+    font-size: 28px;
+    padding: 8px;
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 8px;
+    border: 2px solid rgba(255, 255, 255, 0.2);
+    transition: all 0.3s ease;
+}
+
+.stage:hover {
+    transform: scale(1.1);
+    border-color: rgba(255, 215, 0, 0.5);
+}
+
+.arrow {
+    color: #4ECDC4;
+    font-weight: bold;
+    font-size: 18px;
+}
+
+.path-desc {
+    font-size: 14px;
+    color: #FF6B6B;
+    font-weight: bold;
+    margin-top: 8px;
+}
+
+.evolution-note {
+    font-size: 14px;
+    color: #4ECDC4;
+    font-style: italic;
+    text-align: center;
+    margin-top: 15px;
+    font-weight: bold;
+}
+
+/* PROGRESS BARS STYLES */
+.progress-bars {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.progress-item {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    padding: 12px;
+    background: rgba(255, 255, 255, 0.06);
+    border-radius: 10px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.progress-label {
+    font-weight: bold;
+    color: #FFD700;
+    min-width: 100px;
+    text-align: left;
+    font-size: 16px;
+}
+
+.progress-bar {
+    flex: 1;
+    height: 20px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 10px;
+    overflow: hidden;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.3);
+}
+
+.progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #FF6B6B, #4ECDC4, #45B7D1);
+    border-radius: 10px;
+    transition: width 0.5s ease-in-out;
+    box-shadow: 0 0 10px rgba(78, 205, 196, 0.5);
+}
+
+.progress-text {
+    font-weight: bold;
+    color: #FFD700;
+    min-width: 50px;
+    text-align: center;
+    font-size: 14px;
+    text-shadow: 0 0 8px rgba(255, 215, 0, 0.5);
 }
 
 /* GAME LOG */
 #game-log {
     background: rgba(0, 0, 0, 0.25);
-    padding: 20px;
-    border-radius: 15px;
-    text-align: left;
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    backdrop-filter: blur(10px);
+    padding: 25px;
+    border-radius: 18px;
+    border: 2px solid rgba(255, 215, 0, 0.2);
+    backdrop-filter: blur(12px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
 }
 
 #game-log h3 {
     margin-top: 0;
     color: #FFD700;
-    text-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
-    border-bottom: 2px solid rgba(255, 255, 255, 0.2);
-    padding-bottom: 10px;
+    text-shadow: 0 0 12px rgba(255, 215, 0, 0.6);
+    font-size: 22px;
+    margin-bottom: 20px;
+    border-bottom: 2px solid rgba(255, 215, 0, 0.3);
+    padding-bottom: 12px;
 }
 
 #log {
     max-height: 250px;
     overflow-y: auto;
-    background: rgba(0, 0, 0, 0.15);
+    background: rgba(0, 0, 0, 0.2);
     padding: 15px;
-    border-radius: 10px;
-    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
 }
 
 .log-entry {
-    margin: 8px 0;
-    padding: 10px;
+    margin: 10px 0;
+    padding: 12px;
     border-left: 4px solid #4CAF50;
     background: rgba(255, 255, 255, 0.08);
-    border-radius: 5px;
+    border-radius: 8px;
     transition: all 0.3s ease;
     font-size: 14px;
+    line-height: 1.4;
 }
 
 .log-entry:hover {
@@ -358,25 +640,30 @@ button:active {
     transform: translateX(5px);
 }
 
-/* Special log entry styles for different events */
-.log-entry:contains("EVOLUTION") {
+/* Special log entry styles */
+.log-entry:contains("EVOLUTION"),
+.log-entry:contains("EVOLVE") {
     border-left-color: #FFD700;
     background: rgba(255, 215, 0, 0.1);
+    font-weight: bold;
 }
 
 .log-entry:contains("COMBO") {
     border-left-color: #FF6B6B;
     background: rgba(255, 107, 107, 0.1);
+    font-weight: bold;
 }
 
-.log-entry:contains("VICTORY") {
+.log-entry:contains("VICTORY"),
+.log-entry:contains("DEFEATED") {
     border-left-color: #4CAF50;
     background: rgba(76, 175, 80, 0.15);
     font-weight: bold;
     text-align: center;
+    font-size: 16px;
 }
 
-/* Scrollbar styling for log */
+/* Scrollbar styling */
 #log::-webkit-scrollbar {
     width: 8px;
 }
@@ -387,12 +674,12 @@ button:active {
 }
 
 #log::-webkit-scrollbar-thumb {
-    background: rgba(255, 255, 255, 0.3);
+    background: linear-gradient(135deg, #4ECDC4, #45B7D1);
     border-radius: 4px;
 }
 
 #log::-webkit-scrollbar-thumb:hover {
-    background: rgba(255, 255, 255, 0.5);
+    background: linear-gradient(135deg, #45B7D1, #4ECDC4);
 }
 
 /* Responsive Design */
@@ -411,27 +698,42 @@ button:active {
     }
     
     button {
-        padding: 12px 18px;
-        font-size: 14px;
-        margin: 5px;
+        padding: 14px 20px;
+        font-size: 16px;
+        margin: 8px;
+        min-width: 120px;
     }
     
     #battle-field {
-        height: 180px;
+        height: 200px;
+    }
+    
+    .progress-item {
+        flex-direction: column;
+        gap: 8px;
+        text-align: center;
+    }
+    
+    .progress-label {
+        min-width: auto;
     }
 }
 
 /* Loading animation */
 @keyframes fadeIn {
-    from { opacity: 0; transform: translateY(20px); }
+    from { opacity: 0; transform: translateY(30px); }
     to { opacity: 1; transform: translateY(0); }
 }
 
 #game-container {
+    animation: fadeIn 1s ease-out;
+}
+
+.instruction-section {
     animation: fadeIn 0.8s ease-out;
 }
 
-/* Particle effects for special events */
+/* Particle effects */
 .particle {
     position: absolute;
     pointer-events: none;
