@@ -62,13 +62,14 @@ body {
     position: absolute;
     font-size: 32px;
     bottom: 10px;
-    animation: attack 1.5s infinite;
+    transition: all 0.5s ease-in-out;
+    animation: float 1s infinite;
 }
 
-@keyframes attack {
-    0% { transform: translateX(0px); }
-    50% { transform: translateX(100px); }
-    100% { transform: translateX(0px); }
+@keyframes float {
+    0% { transform: translateY(0px); }
+    50% { transform: translateY(-10px); }
+    100% { transform: translateY(0px); }
 }
 
 /* CONTROLS */
