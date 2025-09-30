@@ -17,27 +17,33 @@ function initGame() {
     addLog("🎮 Game started! Boss is waiting for challengers...");
 }
 
-// Summon Unit Function
+// Summon Unit Function - ONE TIME ATTACK
 function summonUnit(type) {
     const unit = unitTypes[type];
     
-    // Add unit to array
-    units.push({ 
-        type: type, 
-        damage: unit.damage,
-        id: Date.now() + Math.random()
-    });
-    
     // Create unit visual
-    createUnitVisual(type, unit.emoji);
+    const unitId = createUnitVisual(type, unit.emoji);
     
     // Add battle log
-    addLog(`🎁 ${unit.emoji} ${type.charAt(0).toUpperCase() + type.slice(1)} summoned! (${unit.damage} damage)`);
+    addLog(`🎁 ${unit.emoji} ${type.charAt(0).toUpperCase() + type.slice(1)} summoned!`);
     
-    // Start combat if not already running
-    if (!gameInterval) {
-        startCombat();
-    }
+    // ONE-TIME ATTACK after 1 second delay
+    setTimeout(() => {
+        // Apply damage
+        bossHealth = Math.max(0, bossHealth - unit.damage);
+        updateBossHealth();
+        
+        // Show attack message
+        addLog(`⚔️ ${unit.emoji} dealt ${unit.damage} damage to boss!`);
+        
+        // Remove unit after attack
+        removeUnit(unitId);
+        
+        // Check if boss defeated
+        if (bossHealth <= 0) {
+            bossDefeated();
+        }
+    }, 1000);
 }
 
 // Create Unit Visual
