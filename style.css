@@ -1,78 +1,111 @@
 body {
-    font-family: Arial, sans-serif;
+    font-family: 'Arial', sans-serif;
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     color: white;
     margin: 0;
     padding: 20px;
+    min-height: 100vh;
 }
 
 #game-container {
     max-width: 800px;
     margin: 0 auto;
     text-align: center;
+    background: rgba(0, 0, 0, 0.1);
+    border-radius: 15px;
+    padding: 20px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
 }
 
 /* BOSS STYLES */
 #boss {
     background: rgba(0, 0, 0, 0.3);
-    padding: 20px;
-    border-radius: 15px;
+    padding: 25px;
+    border-radius: 20px;
     margin: 20px 0;
+    border: 2px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
 }
 
 #boss-health-bar {
     width: 100%;
-    height: 30px;
-    background: #555;
-    border-radius: 15px;
-    margin: 10px 0;
+    height: 35px;
+    background: #333;
+    border-radius: 20px;
+    margin: 15px 0;
     overflow: hidden;
+    border: 2px solid rgba(255, 255, 255, 0.2);
 }
 
 #boss-health {
     width: 100%;
     height: 100%;
-    background: linear-gradient(90deg, #ff0000, #00ff00);
-    transition: width 0.5s;
+    background: linear-gradient(90deg, #ff0000, #ff6b6b, #4CAF50);
+    transition: width 0.5s ease-in-out;
+    border-radius: 18px;
 }
 
 #boss-image {
-    font-size: 48px;
-    margin: 10px 0;
+    font-size: 64px;
+    margin: 15px 0;
+    text-shadow: 0 0 20px rgba(255, 0, 0, 0.5);
+    animation: bossPulse 3s infinite;
+}
+
+@keyframes bossPulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+    100% { transform: scale(1); }
 }
 
 #boss-stats {
-    font-size: 18px;
+    font-size: 20px;
     font-weight: bold;
+    color: #FFD700;
+    text-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
 }
 
 /* BATTLE FIELD */
 #battle-field {
-    height: 200px; /* Tambah height untuk projectile space */
+    height: 220px;
     border: 3px dashed rgba(255, 255, 255, 0.3);
-    border-radius: 10px;
-    margin: 20px 0;
-    padding: 10px;
+    border-radius: 15px;
+    margin: 25px 0;
+    padding: 15px;
     position: relative;
     background: rgba(0, 0, 0, 0.2);
-    overflow: hidden; /* Prevent overflow */
+    overflow: hidden;
+    backdrop-filter: blur(5px);
 }
 
 /* UNIT STYLES */
 .unit {
     position: absolute;
-    font-size: 32px;
-    bottom: 20px;
+    font-size: 36px;
+    bottom: 25px;
     transition: all 0.5s ease-in-out;
-    animation: float 1s infinite;
-    filter: drop-shadow(0 0 5px rgba(255,255,255,0.5));
+    animation: float 1.5s infinite ease-in-out;
+    filter: drop-shadow(0 0 8px rgba(255, 255, 255, 0.7));
     z-index: 5;
+    text-shadow: 0 0 10px currentColor;
 }
 
 @keyframes float {
-    0% { transform: translateY(0px); }
-    50% { transform: translateY(-10px); }
-    100% { transform: translateY(0px); }
+    0% { 
+        transform: translateY(0px) rotate(0deg); 
+    }
+    25% { 
+        transform: translateY(-15px) rotate(5deg); 
+    }
+    50% { 
+        transform: translateY(-20px) rotate(0deg); 
+    }
+    75% { 
+        transform: translateY(-15px) rotate(-5deg); 
+    }
+    100% { 
+        transform: translateY(0px) rotate(0deg); 
+    }
 }
 
 /* ATTACK PROJECTILE ANIMATIONS */
@@ -80,16 +113,21 @@ body {
     position: absolute;
     z-index: 10;
     pointer-events: none;
+    filter: drop-shadow(0 0 5px rgba(255, 255, 0, 0.8));
 }
 
 /* ARCHER - Arrow Attack */
 @keyframes arrowAttack {
     0% {
-        transform: translate(0, 0) rotate(0deg);
+        transform: translate(0, 0) rotate(0deg) scale(1);
+        opacity: 1;
+    }
+    70% {
+        transform: translate(250px, -40px) rotate(45deg) scale(1);
         opacity: 1;
     }
     100% {
-        transform: translate(300px, -50px) rotate(45deg);
+        transform: translate(350px, -60px) rotate(60deg) scale(0.8);
         opacity: 0;
     }
 }
@@ -99,29 +137,36 @@ body {
     0% {
         transform: translate(0, 0) scale(1);
         opacity: 1;
+        filter: brightness(1) drop-shadow(0 0 5px red);
     }
     50% {
-        transform: translate(150px, -30px) scale(1.2);
+        transform: translate(175px, -20px) scale(1.4);
         opacity: 1;
+        filter: brightness(1.5) drop-shadow(0 0 15px orange);
     }
     100% {
-        transform: translate(300px, 0) scale(0.5);
+        transform: translate(350px, 0) scale(0.6);
         opacity: 0;
+        filter: brightness(0.5) drop-shadow(0 0 5px yellow);
     }
 }
 
 /* TANK - Shield Attack */
 @keyframes shieldAttack {
     0% {
-        transform: translate(0, 0) rotate(0deg);
+        transform: translate(0, 0) rotate(0deg) scale(1);
         opacity: 1;
     }
-    50% {
-        transform: translate(150px, 0) rotate(180deg);
+    30% {
+        transform: translate(120px, 0) rotate(180deg) scale(1.1);
+        opacity: 1;
+    }
+    60% {
+        transform: translate(240px, 10px) rotate(360deg) scale(1);
         opacity: 1;
     }
     100% {
-        transform: translate(300px, 0) rotate(360deg);
+        transform: translate(350px, 0) rotate(540deg) scale(0.8);
         opacity: 0;
     }
 }
@@ -129,11 +174,15 @@ body {
 /* DEFAULT ATTACK */
 @keyframes defaultAttack {
     0% {
-        transform: translate(0, 0);
+        transform: translate(0, 0) scale(1);
+        opacity: 1;
+    }
+    80% {
+        transform: translate(280px, 0) scale(1);
         opacity: 1;
     }
     100% {
-        transform: translate(300px, 0);
+        transform: translate(350px, 0) scale(0.5);
         opacity: 0;
     }
 }
@@ -144,72 +193,259 @@ body {
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
-    font-size: 48px;
+    font-size: 52px;
     font-weight: bold;
     color: gold;
-    text-shadow: 0 0 10px red, 0 0 20px orange, 0 0 30px yellow;
+    text-shadow: 
+        0 0 10px red, 
+        0 0 20px orange, 
+        0 0 30px yellow,
+        0 0 40px gold;
     animation: comboGlow 1.5s ease-out;
     z-index: 100;
+    pointer-events: none;
 }
 
 @keyframes comboGlow {
     0% { 
-        transform: translate(-50%, -50%) scale(0.5);
+        transform: translate(-50%, -50%) scale(0.3);
         opacity: 0;
+        filter: blur(20px);
     }
     50% { 
-        transform: translate(-50%, -50%) scale(1.2);
+        transform: translate(-50%, -50%) scale(1.3);
         opacity: 1;
+        filter: blur(0px);
     }
     100% { 
         transform: translate(-50%, -50%) scale(1);
         opacity: 0;
+        filter: blur(10px);
+    }
+}
+
+/* EVOLUTION EFFECTS */
+.evolution-effect {
+    position: absolute;
+    top: 30%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 42px;
+    font-weight: bold;
+    color: #FFD700;
+    text-shadow: 
+        0 0 10px #FF6B00, 
+        0 0 20px #FF8C00,
+        0 0 30px #FFA500;
+    animation: evolutionGlow 2s ease-out;
+    z-index: 90;
+    pointer-events: none;
+}
+
+@keyframes evolutionGlow {
+    0% { 
+        transform: translate(-50%, -50%) scale(0.8);
+        opacity: 0;
+        filter: blur(15px) hue-rotate(0deg);
+    }
+    25% {
+        transform: translate(-50%, -50%) scale(1.1);
+        opacity: 0.8;
+        filter: blur(5px) hue-rotate(90deg);
+    }
+    50% { 
+        transform: translate(-50%, -50%) scale(1.3);
+        opacity: 1;
+        filter: blur(0px) hue-rotate(180deg);
+        text-shadow: 
+            0 0 20px #FF6B00, 
+            0 0 40px #FF8C00,
+            0 0 60px #FFA500;
+    }
+    75% {
+        transform: translate(-50%, -50%) scale(1.1);
+        opacity: 0.8;
+        filter: blur(5px) hue-rotate(270deg);
+    }
+    100% { 
+        transform: translate(-50%, -50%) scale(1);
+        opacity: 0;
+        filter: blur(10px) hue-rotate(360deg);
     }
 }
 
 /* CONTROLS */
 #controls {
-    background: rgba(0, 0, 0, 0.3);
-    padding: 15px;
-    border-radius: 10px;
-    margin: 20px 0;
+    background: rgba(0, 0, 0, 0.25);
+    padding: 20px;
+    border-radius: 15px;
+    margin: 25px 0;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+}
+
+#controls h3 {
+    margin-top: 0;
+    color: #FFD700;
+    text-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
 }
 
 button {
-    background: #4CAF50;
+    background: linear-gradient(135deg, #4CAF50, #45a049);
     color: white;
     border: none;
-    padding: 12px 20px;
-    margin: 5px;
-    border-radius: 5px;
+    padding: 14px 24px;
+    margin: 8px;
+    border-radius: 8px;
     font-size: 16px;
+    font-weight: bold;
     cursor: pointer;
-    transition: background 0.3s;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    border: 2px solid rgba(255, 255, 255, 0.1);
 }
 
 button:hover {
-    background: #45a049;
+    background: linear-gradient(135deg, #45a049, #4CAF50);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
+}
+
+button:active {
+    transform: translateY(0);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
 }
 
 /* GAME LOG */
 #game-log {
-    background: rgba(0, 0, 0, 0.3);
-    padding: 15px;
-    border-radius: 10px;
+    background: rgba(0, 0, 0, 0.25);
+    padding: 20px;
+    border-radius: 15px;
     text-align: left;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+}
+
+#game-log h3 {
+    margin-top: 0;
+    color: #FFD700;
+    text-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
+    border-bottom: 2px solid rgba(255, 255, 255, 0.2);
+    padding-bottom: 10px;
 }
 
 #log {
-    max-height: 200px;
+    max-height: 250px;
     overflow-y: auto;
-    background: rgba(0, 0, 0, 0.2);
-    padding: 10px;
-    border-radius: 5px;
+    background: rgba(0, 0, 0, 0.15);
+    padding: 15px;
+    border-radius: 10px;
+    border: 1px solid rgba(255, 255, 255, 0.05);
 }
 
 .log-entry {
-    margin: 5px 0;
-    padding: 5px;
-    border-left: 3px solid #4CAF50;
+    margin: 8px 0;
+    padding: 10px;
+    border-left: 4px solid #4CAF50;
+    background: rgba(255, 255, 255, 0.08);
+    border-radius: 5px;
+    transition: all 0.3s ease;
+    font-size: 14px;
+}
+
+.log-entry:hover {
+    background: rgba(255, 255, 255, 0.12);
+    transform: translateX(5px);
+}
+
+/* Special log entry styles for different events */
+.log-entry:contains("EVOLUTION") {
+    border-left-color: #FFD700;
+    background: rgba(255, 215, 0, 0.1);
+}
+
+.log-entry:contains("COMBO") {
+    border-left-color: #FF6B6B;
+    background: rgba(255, 107, 107, 0.1);
+}
+
+.log-entry:contains("VICTORY") {
+    border-left-color: #4CAF50;
+    background: rgba(76, 175, 80, 0.15);
+    font-weight: bold;
+    text-align: center;
+}
+
+/* Scrollbar styling for log */
+#log::-webkit-scrollbar {
+    width: 8px;
+}
+
+#log::-webkit-scrollbar-track {
     background: rgba(255, 255, 255, 0.1);
+    border-radius: 4px;
+}
+
+#log::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.3);
+    border-radius: 4px;
+}
+
+#log::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.5);
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    #game-container {
+        margin: 10px;
+        padding: 15px;
+    }
+    
+    #boss-image {
+        font-size: 48px;
+    }
+    
+    .unit {
+        font-size: 28px;
+    }
+    
+    button {
+        padding: 12px 18px;
+        font-size: 14px;
+        margin: 5px;
+    }
+    
+    #battle-field {
+        height: 180px;
+    }
+}
+
+/* Loading animation */
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+#game-container {
+    animation: fadeIn 0.8s ease-out;
+}
+
+/* Particle effects for special events */
+.particle {
+    position: absolute;
+    pointer-events: none;
+    z-index: 99;
+    animation: particleFloat 2s ease-out forwards;
+}
+
+@keyframes particleFloat {
+    0% {
+        transform: translate(0, 0) scale(1);
+        opacity: 1;
+    }
+    100% {
+        transform: translate(var(--tx), var(--ty)) scale(0);
+        opacity: 0;
+    }
 }
